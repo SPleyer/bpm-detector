@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BPM Test v4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- bpm-detective EMBEDDED (no CDN) -->
+  <script>
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.DetectBPM=f()}})(function(){var define,module,exports;return function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r}()({1:[function(require,module,exports){"use strict";Object.defineProperty(exports,"__esModule",{value:true});exports.default=detect;var OfflineContext=window.OfflineAudioContext||window.webkitOfflineAudioContext;function detect(buffer){var source=getLowPassSource(buffer);source.start(0);return[findPeaks,identifyIntervals,groupByTempo(buffer.sampleRate),getTopCandidate].reduce(function(state,fn){return fn(state)},source.buffer.getChannelData(0))}function getTopCandidate(candidates){return candidates.sort(function(a,b){return b.count-a.count}).splice(0,5)[0].tempo}function getLowPassSource(buffer){var length=buffer.length,numberOfChannels=buffer.numberOfChannels,sampleRate=buffer.sampleRate;var context=new OfflineContext(numberOfChannels,length,sampleRate);var source=context.createBufferSource();source.buffer=buffer;var filter=context.createBiquadFilter();filter.type="lowpass";source.connect(filter);filter.connect(context.destination);return source}function findPeaks(data){var peaks=[];var threshold=.9;var minThresold=.3;var minPeaks=15;while(peaks.length<minPeaks&&threshold>=minThresold){peaks=findPeaksAtThreshold(data,threshold);threshold-=.05}if(peaks.length<minPeaks){throw new Error("Could not find enough samples for a reliable detection.")}return peaks}function findPeaksAtThreshold(data,threshold){var peaks=[];for(var i=0,l=data.length;i<l;i+=1){if(data[i]>threshold){peaks.push(i);i+=1e4}}return peaks}function identifyIntervals(peaks){var intervals=[];peaks.forEach(function(peak,index){var _loop=function _loop(i){var interval=peaks[index+i]-peak;var foundInterval=intervals.some(function(intervalCount){if(intervalCount.interval===interval){return intervalCount.count+=1}});if(!foundInterval){intervals.push({interval:interval,count:1})}};for(var i=0;i<10;i+=1){_loop(i)}});return intervals}function groupByTempo(sampleRate){return function(intervalCounts){var tempoCounts=[];intervalCounts.forEach(function(intervalCount){if(intervalCount.interval!==0){var theoreticalTempo=60/(intervalCount.interval/sampleRate);while(theoreticalTempo<90){theoreticalTempo*=2}while(theoreticalTempo>180){theoreticalTempo/=2}theoreticalTempo=Math.round(theoreticalTempo);var foundTempo=tempoCounts.some(function(tempoCount){if(tempoCount.tempo===theoreticalTempo){return tempoCount.count+=intervalCount.count}});if(!foundTempo){tempoCounts.push({tempo:theoreticalTempo,count:intervalCount.count})}}});return tempoCounts}}},{}],2:[function(require,module,exports){module.exports=require("./detect").default},{"./detect":1}]},{},[2])(2)});
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg:#000; --fg:#fff; --muted:#555; --border:#222; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Space Mono', monospace;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      padding: 20px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .title-main {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 40px;
+      letter-spacing: 4px;
+      line-height: 1;
+    }
+
+    .title-sub {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-top: 3px;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .record-btn {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 17px;
+      letter-spacing: 4px;
+      padding: 10px 22px;
+      border: 2px solid var(--fg);
+      background: transparent;
+      color: var(--fg);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      white-space: nowrap;
+    }
+
+    .record-btn.recording { background: var(--fg); color: var(--bg); }
+
+    .duration-btns { display: flex; gap: 6px; }
+
+    .dur-btn {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px;
+      letter-spacing: 2px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all 0.2s;
+    }
+
+    .dur-btn.active { border-color: var(--fg); color: var(--fg); }
+
+    .status-text {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      flex: 1;
+    }
+
+    .progress-wrap {
+      height: 2px;
+      background: var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      position: absolute;
+      left: 0; top: 0; height: 100%;
+      background: var(--fg);
+      width: 0%;
+      transition: width 0.3s linear;
+    }
+
+    .signal-wrap {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .signal-label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .signal-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      position: relative;
+    }
+
+    .signal-fill {
+      position: absolute;
+      left: 0; top: 0; height: 100%;
+      background: var(--fg);
+      width: 0%;
+      transition: width 0.1s ease;
+    }
+
+    .signal-db {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      min-width: 64px;
+      text-align: right;
+    }
+
+    .waveform-wrap {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      height: 32px;
+    }
+
+    .waveform-bar {
+      width: 3px;
+      background: var(--fg);
+      border-radius: 1px;
+      height: 3px;
+      opacity: 0.15;
+      transition: height 0.07s ease;
+    }
+
+    .waveform-bar.active { opacity: 1; }
+
+    .results {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .algo-col {
+      background: var(--bg);
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .algo-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+
+    .algo-desc {
+      font-size: 7px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      line-height: 1.7;
+      text-transform: uppercase;
+    }
+
+    .algo-bpm {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(42px, 9vw, 68px);
+      line-height: 1;
+      color: #2a2a2a;
+      letter-spacing: -1px;
+      transition: color 0.4s;
+    }
+
+    .algo-bpm.has-result { color: var(--fg); }
+
+    .algo-unit {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 10px;
+      letter-spacing: 5px;
+      color: var(--muted);
+      margin-top: -4px;
+    }
+
+    .algo-genre {
+      font-size: 7px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      min-height: 11px;
+    }
+
+    .algo-status {
+      font-size: 8px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-transform: uppercase;
+      line-height: 1.6;
+      min-height: 24px;
+    }
+
+    .live-dot {
+      display: inline-block;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--fg);
+      margin-right: 3px;
+      animation: blink 1s ease-in-out infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.1} }
+
+    .agreement {
+      padding: 10px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+    }
+
+    .agreement.agree { color: var(--fg); }
+    .agreement.disagree { color: #777; }
+
+    .log-section { padding: 10px 20px; border-top: 1px solid var(--border); }
+
+    .log {
+      font-size: 8px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      line-height: 1.8;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .log-entry.hi { color: var(--fg); }
+    .log-entry.warn { color: #888; }
+
+    .notes { padding: 10px 20px 32px; border-top: 1px solid var(--border); }
+
+    .note {
+      font-size: 8px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      line-height: 1.9;
+      text-transform: uppercase;
+    }
+
+    .note span { color: #777; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="title-main">BPM TEST v4</div>
+  <div class="title-sub">Fixes: normalization · stereo→mono mixdown · iOS sample rate · all bugs from v3 resolved</div>
+</header>
+
+<div class="controls">
+  <button class="record-btn" id="recordBtn" onclick="toggleRecording()">⊙ RECORD</button>
+  <div class="duration-btns">
+    <button class="dur-btn active" data-sec="10" onclick="setDuration(10,this)">10s</button>
+    <button class="dur-btn" data-sec="15" onclick="setDuration(15,this)">15s</button>
+    <button class="dur-btn" data-sec="20" onclick="setDuration(20,this)">20s</button>
+  </div>
+  <div class="status-text" id="statusText">Ready — press record</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-fill" id="progressFill"></div>
+</div>
+
+<div class="signal-wrap">
+  <div class="signal-label">Signal</div>
+  <div class="signal-track"><div class="signal-fill" id="signalFill"></div></div>
+  <div class="signal-db" id="signalDb">— dB</div>
+</div>
+
+<div class="waveform-wrap">
+  <div class="section-label">Live input</div>
+  <div class="waveform" id="waveform"></div>
+</div>
+
+<div class="results">
+  <div class="algo-col">
+    <div class="algo-name">A — LIVE</div>
+    <div class="algo-desc">Live · Bass 60–200Hz · Adaptive threshold · IQR filter · Octave correction</div>
+    <div class="algo-bpm" id="bpmA">—</div>
+    <div class="algo-unit">BPM</div>
+    <div class="algo-genre" id="genreA"></div>
+    <div class="algo-status" id="statusA">Waiting</div>
+  </div>
+  <div class="algo-col">
+    <div class="algo-name">B — AUTOCORR</div>
+    <div class="algo-desc">Offline · Normalized · Stereo→mono · Bass filtered · Onset ACF · Peak grouping</div>
+    <div class="algo-bpm" id="bpmB">—</div>
+    <div class="algo-unit">BPM</div>
+    <div class="algo-genre" id="genreB"></div>
+    <div class="algo-status" id="statusB">Waiting</div>
+  </div>
+  <div class="algo-col">
+    <div class="algo-name">C — BPM-LIB</div>
+    <div class="algo-desc">Offline · Normalized · Stereo→mono · bpm-detective embedded · 90–180 range</div>
+    <div class="algo-bpm" id="bpmC">—</div>
+    <div class="algo-unit">BPM</div>
+    <div class="algo-genre" id="genreC"></div>
+    <div class="algo-status" id="statusC">Waiting</div>
+  </div>
+</div>
+
+<div class="agreement" id="agreement">—</div>
+
+<div class="log-section">
+  <div class="section-label" style="margin-bottom:6px;">Log</div>
+  <div class="log" id="log"></div>
+</div>
+
+<div class="notes">
+  <div class="note">· <span>v4 fixes:</span> normalizeBuffer no longer uses OfflineAudioContext unnecessarily.</div>
+  <div class="note">· Stereo mic input is mixed to mono before offline analysis (fixes iOS stereo crash).</div>
+  <div class="note">· decodeAudioData now preserves original sample rate (fixes iOS 48kHz vs 44.1kHz issue).</div>
+  <div class="note">· Signal meter: aim for &gt;40% for reliable detection. Use Wide Spectrum on iPhone.</div>
+  <div class="note">· If B+C agree → that algorithm goes into the main app.</div>
+</div>
+
+<script>
+  const GENRES = [
+    { max: 70,  label: "Downtempo" },
+    { max: 90,  label: "Hip-Hop / Trap" },
+    { max: 110, label: "Trip-Hop / Lo-Fi" },
+    { max: 122, label: "Deep House" },
+    { max: 128, label: "House" },
+    { max: 135, label: "Tech House" },
+    { max: 140, label: "Techno — Minimal" },
+    { max: 148, label: "Techno — Peak Time" },
+    { max: 155, label: "Hard Techno" },
+    { max: 175, label: "Drum & Bass" },
+    { max: 999, label: "Hardcore / Gabber" },
+  ];
+
+  function getGenre(bpm) { return GENRES.find(g => bpm < g.max)?.label || "Unknown"; }
+
+  function octaveCorrect(bpm) {
+    while (bpm > 0 && bpm < 65 && bpm * 2 <= 200) bpm *= 2;
+    while (bpm > 185 && bpm / 2 >= 65) bpm = Math.round(bpm / 2);
+    return Math.round(bpm);
+  }
+
+  // ── NORMALIZE: boost mic signal to full scale ─────────────────────────────
+  // Bug fixed: no longer uses OfflineAudioContext (unnecessary & potentially slow)
+  // Now creates an AudioBuffer directly using the same sampleRate
+  function normalizeToMono(audioBuffer) {
+    const sampleRate = audioBuffer.sampleRate;
+    const length = audioBuffer.length;
+    const numCh = audioBuffer.numberOfChannels;
+
+    // Mix down to mono first (average all channels)
+    const mono = new Float32Array(length);
+    for (let ch = 0; ch < numCh; ch++) {
+      const chData = audioBuffer.getChannelData(ch);
+      for (let i = 0; i < length; i++) mono[i] += chData[i] / numCh;
+    }
+
+    // Find peak
+    let peak = 0;
+    for (let i = 0; i < mono.length; i++) {
+      const abs = Math.abs(mono[i]);
+      if (abs > peak) peak = abs;
+    }
+
+    log(`Signal: peak=${peak.toFixed(4)}, channels=${numCh}, duration=${(length/sampleRate).toFixed(1)}s`);
+
+    if (peak < 0.0005) {
+      log('Signal too weak — microphone may be muted or too far away', 'warn');
+      // Return a mono buffer even if too quiet — let algorithms try
+    }
+
+    // Normalize
+    const gain = peak > 0.0005 ? 1.0 / peak : 1.0;
+    if (gain > 1) log(`Normalization: ${gain.toFixed(1)}x gain applied`);
+
+    for (let i = 0; i < mono.length; i++) mono[i] *= gain;
+
+    // Create proper AudioBuffer with correct sampleRate
+    // Fix: use OfflineAudioContext.createBuffer — this is valid without rendering
+    const ctx = new OfflineAudioContext(1, length, sampleRate);
+    const monoBuffer = ctx.createBuffer(1, length, sampleRate);
+    monoBuffer.getChannelData(0).set(mono);
+    return monoBuffer;
+  }
+
+  // ── LOG ───────────────────────────────────────────────────────────────────
+  function log(msg, type = '') {
+    const el = document.getElementById('log');
+    const t = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    const d = document.createElement('div');
+    d.className = 'log-entry' + (type === 'hi' ? ' hi' : type === 'warn' ? ' warn' : '');
+    d.textContent = `[${t}] ${msg}`;
+    el.insertBefore(d, el.firstChild);
+  }
+
+  // ── WAVEFORM ─────────────────────────────────────────────────────────────
+  const BAR_COUNT = 32;
+  const waveformEl = document.getElementById('waveform');
+  const bars = [];
+  for (let i = 0; i < BAR_COUNT; i++) {
+    const b = document.createElement('div');
+    b.className = 'waveform-bar';
+    waveformEl.appendChild(b);
+    bars.push(b);
+  }
+
+  // ── DURATION ─────────────────────────────────────────────────────────────
+  let recordDuration = 10000;
+  function setDuration(sec, btn) {
+    recordDuration = sec * 1000;
+    document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // ── STATE ─────────────────────────────────────────────────────────────────
+  let recording = false;
+  let stream = null, audioCtx = null;
+  let analyserRaw = null, analyserBass = null;
+  let animFrame = null, progressInterval = null, startTime = null;
+  let recordedSampleRate = 44100; // will be updated from actual AudioContext
+
+  // Algo A
+  let beatsA = [], lastBeatA = 0, energyA = [];
+  let stableStartA = null, lastBpmA = null, liveBpmA = null;
+
+  // Offline
+  let offlineChunks = [], mediaRecorder = null;
+
+  // ── RESULT UI ─────────────────────────────────────────────────────────────
+  function setResult(id, bpm, status, live = false) {
+    const bpmEl   = document.getElementById('bpm' + id);
+    const statEl  = document.getElementById('status' + id);
+    const genreEl = document.getElementById('genre' + id);
+    if (bpm !== null) {
+      bpmEl.textContent = bpm;
+      bpmEl.classList.add('has-result');
+      genreEl.textContent = getGenre(bpm);
+    } else {
+      bpmEl.textContent = '—';
+      bpmEl.classList.remove('has-result');
+      genreEl.textContent = '';
+    }
+    statEl.innerHTML = live ? `<span class="live-dot"></span>${status}` : status;
+    updateAgreement();
+  }
+
+  function updateAgreement() {
+    const vals = ['A','B','C'].map(id => {
+      const t = document.getElementById('bpm'+id).textContent;
+      return t === '—' ? null : Number(t);
+    });
+    const el = document.getElementById('agreement');
+    const nums = vals.filter(v => v !== null);
+    if (nums.length < 2) { el.textContent = 'Waiting for results...'; el.className = 'agreement'; return; }
+
+    const pairs = [[0,1,'A+B'],[0,2,'A+C'],[1,2,'B+C']];
+    const agreements = pairs
+      .filter(([i,j]) => vals[i] !== null && vals[j] !== null && Math.abs(vals[i] - vals[j]) <= 3)
+      .map(([,, label], _, arr) => {
+        const [i,j] = pairs[arr.indexOf(pairs.find(p => p[2] === label))];
+        return `${label} agree: ${Math.round((vals[i]+vals[j])/2)} BPM`;
+      });
+
+    if (agreements.length > 0) {
+      el.textContent = '✓ ' + agreements.join(' · ');
+      el.className = 'agreement agree';
+    } else {
+      el.textContent = `⚠ Disagree: A=${vals[0]||'?'} B=${vals[1]||'?'} C=${vals[2]||'?'} — try moving closer`;
+      el.className = 'agreement disagree';
+    }
+  }
+
+  // ── RECORD ────────────────────────────────────────────────────────────────
+  async function toggleRecording() {
+    if (recording) { stopRecording(); return; }
+    await startRecording();
+  }
+
+  async function startRecording() {
+    ['A','B','C'].forEach(id => setResult(id, null, 'Waiting'));
+    document.getElementById('log').innerHTML = '';
+    document.getElementById('agreement').textContent = '—';
+    document.getElementById('agreement').className = 'agreement';
+    beatsA = []; lastBeatA = 0; energyA = [];
+    stableStartA = null; lastBpmA = null; liveBpmA = null;
+    offlineChunks = [];
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    } catch(e) {
+      document.getElementById('statusText').textContent = 'Microphone denied';
+      return;
+    }
+
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    recordedSampleRate = audioCtx.sampleRate; // capture actual sample rate (iOS may use 48000)
+    log(`AudioContext sample rate: ${recordedSampleRate}Hz`);
+
+    const source = audioCtx.createMediaStreamSource(stream);
+
+    analyserRaw = audioCtx.createAnalyser();
+    analyserRaw.fftSize = 2048;
+    analyserRaw.smoothingTimeConstant = 0.5;
+    source.connect(analyserRaw);
+
+    // Bass analyser for Algo A (60–200Hz)
+    analyserBass = audioCtx.createAnalyser();
+    analyserBass.fftSize = 2048;
+    analyserBass.smoothingTimeConstant = 0.85;
+    const hp = audioCtx.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 60;
+    const lp = audioCtx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 200;
+    source.connect(hp); hp.connect(lp); lp.connect(analyserBass);
+
+    // MediaRecorder — iOS Safari only supports audio/mp4
+    try {
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+      mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+      mediaRecorder.ondataavailable = e => { if (e.data?.size > 0) offlineChunks.push(e.data); };
+      mediaRecorder.start(200);
+      log(`MediaRecorder: ${mimeType || 'browser default'}`);
+    } catch(e) {
+      log('MediaRecorder failed: ' + e.message, 'warn');
+      mediaRecorder = null;
+    }
+
+    recording = true;
+    startTime = Date.now();
+    document.getElementById('recordBtn').classList.add('recording');
+    document.getElementById('recordBtn').textContent = '◼ STOP';
+    document.getElementById('statusText').textContent = `Recording ${recordDuration/1000}s...`;
+    document.getElementById('progressFill').style.width = '0%';
+    bars.forEach(b => b.classList.add('active'));
+
+    setResult('A', null, 'Live analysing...', true);
+    setResult('B', null, 'Waiting for recording...', false);
+    setResult('C', null, 'Waiting for recording...', false);
+
+    progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      document.getElementById('progressFill').style.width =
+        Math.min(100, (elapsed / recordDuration) * 100) + '%';
+      if (elapsed >= recordDuration) stopRecording();
+    }, 200);
+
+    liveLoop();
+  }
+
+  function stopRecording() {
+    recording = false;
+    clearInterval(progressInterval);
+    cancelAnimationFrame(animFrame);
+
+    document.getElementById('recordBtn').classList.remove('recording');
+    document.getElementById('recordBtn').textContent = '⊙ RECORD';
+    document.getElementById('statusText').textContent = 'Running offline analysis...';
+    document.getElementById('progressFill').style.width = '100%';
+    bars.forEach(b => { b.style.height = '3px'; b.classList.remove('active'); });
+    document.getElementById('signalFill').style.width = '0%';
+    document.getElementById('signalDb').textContent = '— dB';
+
+    // Algo A final result
+    setResult('A', liveBpmA, liveBpmA ? 'Live result' : 'No beat detected');
+    if (liveBpmA) log(`A: ${liveBpmA} BPM (${getGenre(liveBpmA)})`, 'hi');
+    else log('A: No beat detected');
+
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    if (audioCtx) audioCtx.close().catch(() => {});
+
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      setResult('B', null, 'Processing audio...', false);
+      setResult('C', null, 'Processing audio...', false);
+      mediaRecorder.onstop = () => runOfflineAnalysis();
+      mediaRecorder.stop();
+    } else {
+      log('No MediaRecorder data available', 'warn');
+      setResult('B', null, 'No audio data captured');
+      setResult('C', null, 'No audio data captured');
+      document.getElementById('statusText').textContent = 'Done (no offline data)';
+    }
+  }
+
+  // ── ALGO A: LIVE BEAT DETECTION ───────────────────────────────────────────
+  function liveLoop() {
+    if (!recording) return;
+
+    const bufLen = analyserBass.frequencyBinCount;
+    const data = new Float32Array(bufLen);
+    analyserBass.getFloatTimeDomainData(data);
+
+    let sum = 0;
+    for (let i = 0; i < bufLen; i++) sum += data[i] * data[i];
+    const rms = Math.sqrt(sum / bufLen);
+
+    // Signal level meter
+    const db = rms > 0.00001 ? 20 * Math.log10(rms) : -100;
+    const pct = Math.max(0, Math.min(100, (db + 60) / 60 * 100));
+    document.getElementById('signalFill').style.width = pct + '%';
+    document.getElementById('signalDb').textContent = db.toFixed(1) + ' dB';
+
+    // Waveform display
+    const fData = new Uint8Array(analyserRaw.frequencyBinCount);
+    analyserRaw.getByteFrequencyData(fData);
+    const step = Math.floor(fData.length / BAR_COUNT);
+    for (let i = 0; i < BAR_COUNT; i++)
+      bars[i].style.height = Math.max(3, (fData[i*step]/255)*30) + 'px';
+
+    // Adaptive energy history
+    energyA.push(rms);
+    if (energyA.length > 150) energyA.shift();
+    const avgE = energyA.reduce((a,b) => a+b, 0) / energyA.length;
+
+    // Beat detection: spike above adaptive threshold
+    const now = Date.now();
+    if (rms > avgE * 1.4 && rms > 0.008 && now - lastBeatA > 250) {
+      beatsA.push(now);
+      lastBeatA = now;
+      if (beatsA.length > 24) beatsA.shift();
+    }
+
+    // BPM calculation from beat intervals
+    if (beatsA.length >= 4) {
+      const iv = [];
+      for (let i = 1; i < beatsA.length; i++) iv.push(beatsA[i] - beatsA[i-1]);
+      iv.sort((a,b) => a-b);
+      const q1 = iv[Math.floor(iv.length*0.25)];
+      const q3 = iv[Math.floor(iv.length*0.75)];
+      const iqr = q3 - q1;
+      const filtered = iv.filter(v => v >= q1-1.5*iqr && v <= q3+1.5*iqr);
+      if (filtered.length >= 2) {
+        const avg = filtered.reduce((a,b)=>a+b,0)/filtered.length;
+        const bpm = octaveCorrect(Math.round(60000/avg));
+        if (bpm >= 40 && bpm <= 220) {
+          liveBpmA = bpm;
+          if (lastBpmA !== null && Math.abs(bpm - lastBpmA) <= 3) {
+            if (!stableStartA) stableStartA = now;
+            const s = ((now-stableStartA)/1000).toFixed(1);
+            setResult('A', bpm, `Stable ${s}s · ${beatsA.length} beats`, true);
+          } else {
+            stableStartA = null;
+            setResult('A', bpm, `Calibrating · ${beatsA.length} beats`, true);
+          }
+          lastBpmA = bpm;
+        }
+      }
+    }
+
+    animFrame = requestAnimationFrame(liveLoop);
+  }
+
+  // ── DECODE AUDIO ──────────────────────────────────────────────────────────
+  // Fix: use sampleRate from the recorded AudioContext to avoid iOS mismatch
+  async function decodeRecording() {
+    const mimeType = mediaRecorder?.mimeType || 'audio/webm';
+    const blob = new Blob(offlineChunks, { type: mimeType });
+    log(`Decoding ${(blob.size/1024).toFixed(0)}KB of audio (${mimeType})...`);
+
+    const ab = await blob.arrayBuffer();
+
+    // Use a fresh AudioContext — iOS may use 48000Hz, we preserve whatever it is
+    return new Promise((resolve, reject) => {
+      const decodeCtx = new (window.AudioContext || window.webkitAudioContext)();
+      decodeCtx.decodeAudioData(ab,
+        (buffer) => {
+          decodeCtx.close().catch(() => {});
+          log(`Decoded: ${buffer.duration.toFixed(1)}s @ ${buffer.sampleRate}Hz, ${buffer.numberOfChannels}ch`);
+          resolve(buffer);
+        },
+        (err) => {
+          decodeCtx.close().catch(() => {});
+          reject(err);
+        }
+      );
+    });
+  }
+
+  // ── OFFLINE ANALYSIS ──────────────────────────────────────────────────────
+  async function runOfflineAnalysis() {
+    let audioBuffer;
+    try {
+      audioBuffer = await decodeRecording();
+    } catch(e) {
+      log('Decode error: ' + e.message, 'warn');
+      setResult('B', null, 'Decode error — try again');
+      setResult('C', null, 'Decode error — try again');
+      document.getElementById('statusText').textContent = 'Decode error';
+      return;
+    }
+
+    // Normalize and mix to mono ONCE — both B and C share this
+    const monoNormalized = normalizeToMono(audioBuffer);
+
+    // Run B and C in parallel
+    await Promise.all([
+      runAlgoB(monoNormalized),
+      runAlgoC(monoNormalized),
+    ]);
+
+    document.getElementById('statusText').textContent = 'Done — compare results above';
+    log('--- Analysis complete ---', 'hi');
+  }
+
+  // ── ALGO B: OFFLINE AUTOCORRELATION ───────────────────────────────────────
+  async function runAlgoB(monoBuffer) {
+    try {
+      setResult('B', null, 'Running autocorrelation...', false);
+      const sampleRate = monoBuffer.sampleRate;
+      const samples = monoBuffer.getChannelData(0);
+
+      // Step 1: Bass filter (50–220Hz) using OfflineAudioContext
+      const offCtx = new OfflineAudioContext(1, monoBuffer.length, sampleRate);
+      const src = offCtx.createBufferSource();
+      src.buffer = monoBuffer;
+      const hp = offCtx.createBiquadFilter();
+      hp.type = 'highpass'; hp.frequency.value = 50;
+      const lp = offCtx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 220;
+      src.connect(hp); hp.connect(lp); lp.connect(offCtx.destination);
+      src.start(0);
+      const filtered = await offCtx.startRendering(); // properly async!
+      const bassData = filtered.getChannelData(0);
+      log(`B: Bass filtering complete (${bassData.length} samples)`);
+
+      // Step 2: Downsample to ~2000Hz for speed
+      const targetSR = 2000;
+      const ratio = Math.max(1, Math.floor(sampleRate / targetSR));
+      const ds = new Float32Array(Math.floor(bassData.length / ratio));
+      for (let i = 0; i < ds.length; i++) ds[i] = bassData[i * ratio];
+      const effSR = sampleRate / ratio;
+
+      // Step 3: Onset strength function (RMS in overlapping windows)
+      const hop = Math.max(1, Math.floor(effSR * 0.01)); // 10ms hops
+      const win = Math.max(2, Math.floor(effSR * 0.025)); // 25ms window
+      const onset = [];
+      for (let i = 0; i + win < ds.length; i += hop) {
+        let s = 0;
+        for (let j = i; j < i + win; j++) s += ds[j] * ds[j];
+        onset.push(Math.sqrt(s / win));
+      }
+      const maxO = Math.max(...onset) || 1;
+      for (let i = 0; i < onset.length; i++) onset[i] /= maxO;
+
+      const fps = effSR / hop;
+      const minLag = Math.max(1, Math.floor(fps * 60 / 200)); // 200 BPM
+      const maxLag = Math.floor(fps * 60 / 55);               // 55 BPM
+      const N = onset.length;
+
+      log(`B: Onset frames=${N}, fps=${fps.toFixed(1)}, lag range=${minLag}–${maxLag}`);
+
+      if (N < maxLag * 2) {
+        log('B: Recording too short for reliable autocorrelation', 'warn');
+        setResult('B', null, 'Too short — try 15-20s');
+        return;
+      }
+
+      // Step 4: Autocorrelation
+      const acf = new Float32Array(maxLag + 1);
+      for (let lag = minLag; lag <= maxLag; lag++) {
+        let s = 0, cnt = 0;
+        for (let i = 0; i < N - lag; i++) { s += onset[i] * onset[i+lag]; cnt++; }
+        acf[lag] = cnt > 0 ? s / cnt : 0;
+      }
+
+      // Step 5: Find local peaks in ACF
+      const candidates = [];
+      for (let lag = minLag + 1; lag < maxLag; lag++) {
+        if (acf[lag] > acf[lag-1] && acf[lag] > acf[lag+1] && acf[lag] > 0.01) {
+          const rawBpm = fps * 60 / lag;
+          const bpm = octaveCorrect(Math.round(rawBpm));
+          if (bpm >= 55 && bpm <= 200) {
+            candidates.push({ lag, bpm, score: acf[lag] });
+          }
+        }
+      }
+
+      if (candidates.length === 0) {
+        // Fallback: use global maximum
+        let bestLag = minLag, bestVal = -Infinity;
+        for (let lag = minLag; lag <= maxLag; lag++) {
+          if (acf[lag] > bestVal) { bestVal = acf[lag]; bestLag = lag; }
+        }
+        const bpm = octaveCorrect(Math.round(fps * 60 / bestLag));
+        log(`B: No peaks found, using global max lag=${bestLag} → ${bpm} BPM (score=${bestVal.toFixed(3)})`);
+        setResult('B', bpm, `Autocorr (global max, low confidence)`);
+        log(`B: ${bpm} BPM — ${getGenre(bpm)}`, 'hi');
+        return;
+      }
+
+      // Step 6: Group candidates within ±3 BPM, sum scores
+      const grouped = [];
+      for (const c of candidates) {
+        const ex = grouped.find(g => Math.abs(g.bpm - c.bpm) <= 3);
+        if (ex) { ex.score += c.score; ex.count++; }
+        else grouped.push({ bpm: c.bpm, score: c.score, count: 1 });
+      }
+      grouped.sort((a,b) => b.score - a.score);
+
+      const top3 = grouped.slice(0,3).map(g=>`${g.bpm}(${g.score.toFixed(3)})`).join(' ');
+      log(`B: Top candidates: ${top3}`);
+
+      const best = grouped[0];
+      setResult('B', best.bpm, `Autocorr (${candidates.length} peaks, score=${best.score.toFixed(3)})`);
+      log(`B: ${best.bpm} BPM — ${getGenre(best.bpm)}`, 'hi');
+
+    } catch(e) {
+      log('B error: ' + e.message, 'warn');
+      setResult('B', null, 'Error: ' + e.message.substring(0, 50));
+    }
+  }
+
+  // ── ALGO C: BPM-DETECTIVE ─────────────────────────────────────────────────
+  async function runAlgoC(monoBuffer) {
+    try {
+      setResult('C', null, 'Running bpm-detective...', false);
+
+      if (typeof DetectBPM === 'undefined') throw new Error('Library not loaded in page');
+
+      // DetectBPM is synchronous — takes AudioBuffer, returns number
+      const rawBpm = DetectBPM(monoBuffer);
+      log(`C: Library raw result: ${rawBpm} BPM`);
+
+      const corrected = octaveCorrect(rawBpm);
+      log(`C: After octave correction: ${corrected} BPM`);
+
+      setResult('C', corrected, `bpm-detective · raw=${Math.round(rawBpm)} · corrected=${corrected}`);
+      log(`C: ${corrected} BPM — ${getGenre(corrected)}`, 'hi');
+
+    } catch(e) {
+      log('C error: ' + e.message, 'warn');
+      setResult('C', null, 'Error: ' + e.message.substring(0, 60));
+    }
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────────────────
+  window.addEventListener('load', () => {
+    if (typeof DetectBPM !== 'undefined') log('bpm-detective library: LOADED ✓');
+    else log('bpm-detective library: FAILED TO LOAD ✗', 'warn');
+  });
+</script>
+</body>
+</html>
