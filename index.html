@@ -11,21 +11,7 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000'/><text x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='11' fill='%23fff'>BPM</text></svg>" />
 
   <!-- PWA Manifest -->
-  <link rel="manifest" href="data:application/manifest+json,{
-    %22name%22:%22BPM%22,
-    %22short_name%22:%22BPM%22,
-    %22description%22:%22Real-time BPM Detector%22,
-    %22start_url%22:%22./%22,
-    %22display%22:%22standalone%22,
-    %22background_color%22:%22%23000000%22,
-    %22theme_color%22:%22%23000000%22,
-    %22icons%22:[{
-      %22src%22:%22data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23000'/%3E%3Ctext x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='68' fill='%23fff'%3EBPM%3C/text%3E%3C/svg%3E%22,
-      %22sizes%22:%22192x192%22,
-      %22type%22:%22image/svg+xml%22,
-      %22purpose%22:%22any maskable%22
-    }]
-  }" />
+  <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22BPM%22,%22short_name%22:%22BPM%22,%22description%22:%22Real-time BPM Detector%22,%22start_url%22:%22./%22,%22display%22:%22standalone%22,%22background_color%22:%22%23000000%22,%22theme_color%22:%22%23000000%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23000'/%3E%3Ctext x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='68' fill='%23fff'%3EBPM%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22,%22purpose%22:%22any maskable%22}]}" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -61,10 +47,7 @@
       min-height: -webkit-fill-available;
     }
 
-    /* ── HEADER ── */
-    header {
-      padding: 28px 24px 0;
-    }
+    header { padding: 28px 24px 0; }
 
     .title-main {
       font-family: 'Bebas Neue', sans-serif;
@@ -81,7 +64,6 @@
       margin-top: -2px;
     }
 
-    /* ── ABOUT ── */
     .about {
       margin: 20px 24px 0;
       padding: 14px 18px;
@@ -97,7 +79,6 @@
 
     .about-text strong { color: #888; }
 
-    /* ── SAFARI WARNING ── */
     .safari-warning {
       display: none;
       margin: 12px 24px 0;
@@ -134,7 +115,6 @@
     .mode-btn.active { background: var(--fg); color: var(--bg); }
     .mode-divider { width: 1px; background: var(--border); flex-shrink: 0; }
 
-    /* ── MODE HINT ── */
     .mode-hint {
       margin: 10px 24px 0;
       font-size: 10px;
@@ -156,7 +136,6 @@
       gap: 16px;
     }
 
-    /* ── BPM DISPLAY ── */
     .bpm-display { text-align: center; }
 
     .bpm-number {
@@ -180,27 +159,30 @@
       margin-top: -8px;
     }
 
+    /* Genre – less prominent */
     .genre-tag {
-      margin-top: 10px;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(13px, 3.5vw, 18px);
-      letter-spacing: 5px;
-      color: var(--fg);
-      min-height: 24px;
+      margin-top: 6px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      min-height: 18px;
       transition: opacity 0.4s;
     }
 
     .genre-tag.hidden { opacity: 0; }
 
-    /* Fixed height status area — button never shifts */
+    /* Fixed-height status area — never shifts layout */
     .status-area {
-      margin-top: 8px;
-      min-height: 60px;
+      margin-top: 6px;
+      height: 48px; /* fixed, never changes */
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      gap: 5px;
+      justify-content: center;
+      gap: 4px;
+      overflow: hidden;
     }
 
     .status-line {
@@ -208,17 +190,21 @@
       letter-spacing: 2px;
       color: var(--muted);
       text-transform: uppercase;
-      line-height: 1.6;
+      line-height: 1.5;
       text-align: center;
       max-width: 300px;
+      /* Single line max to prevent layout shift */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .iphone-hint {
-      font-size: 10px;
-      letter-spacing: 1.5px;
+      font-size: 9px;
+      letter-spacing: 1px;
       color: var(--muted);
       text-transform: uppercase;
-      line-height: 1.6;
+      line-height: 1.5;
       text-align: center;
       max-width: 300px;
       opacity: 0;
@@ -246,7 +232,7 @@
 
     .waveform-bar.active { opacity: 1; }
 
-    /* ── CONFIDENCE BAR ── */
+    /* ── CONFIDENCE ── */
     .confidence-wrap {
       width: 100%;
       max-width: 260px;
@@ -341,7 +327,6 @@
       color: var(--muted);
     }
 
-    /* ── AUDIO PANEL ── */
     #audioPanel {
       width: 100%;
       display: flex;
@@ -449,9 +434,11 @@
     .history-meta { flex: 1; }
 
     .history-genre {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 13px;
-      letter-spacing: 3px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
     }
 
     .history-info {
@@ -511,19 +498,7 @@
       margin-top: 12px;
     }
 
-    .footer-left {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
     .footer-copy {
-      font-size: 10px;
-      letter-spacing: 2px;
-      color: var(--muted);
-    }
-
-    .footer-visits {
       font-size: 10px;
       letter-spacing: 2px;
       color: var(--muted);
@@ -609,9 +584,8 @@
   <div class="about">
     <div class="about-text">
       <strong>BPM</strong> tells you the tempo of any song in real time.
-      Use <strong>AUDIO</strong> mode to detect BPM automatically via microphone —
-      just hold your phone near the music and wait for a stable result.
-      Or switch to <strong>TAP</strong> mode and tap along with the beat manually.
+      Use <strong>TAP</strong> mode to tap along with the beat manually,
+      or switch to <strong>AUDIO</strong> mode to detect BPM via microphone.
       Optimised for House &amp; Techno.
     </div>
   </div>
@@ -620,14 +594,15 @@
     ⚠ IPHONE: PLEASE USE SAFARI — CHROME ON IOS DOES NOT SUPPORT MICROPHONE ACCESS.
   </div>
 
+  <!-- TAP left, AUDIO right -->
   <div class="mode-switcher">
-    <button class="mode-btn active" id="btnModeAudio" onclick="setMode('audio')">⊙ AUDIO</button>
+    <button class="mode-btn active" id="btnModeTap" onclick="setMode('tap')">⊕ TAP</button>
     <div class="mode-divider"></div>
-    <button class="mode-btn" id="btnModeTap" onclick="setMode('tap')">⊕ TAP</button>
+    <button class="mode-btn" id="btnModeAudio" onclick="setMode('audio')">⊙ AUDIO</button>
   </div>
 
   <div class="mode-hint" id="modeHint">
-    Hold your device near the music and press start — waits for a stable result before displaying BPM.
+    Tap the button in time with the beat. Resets after 3 seconds of inactivity.
   </div>
 
   <main>
@@ -638,13 +613,22 @@
       <div class="status-area">
         <div class="status-line" id="statusLine"></div>
         <div class="iphone-hint" id="iphoneHint">
-          IPHONE: IF RESULTS ARE INACCURATE — WHILE RECORDING, OPEN CONTROL CENTER AND SET MICROPHONE MODE TO "WIDE SPECTRUM"
+          IPHONE: OPEN CONTROL CENTER → SET MIC TO "WIDE SPECTRUM"
         </div>
       </div>
     </div>
 
+    <!-- TAP PANEL — shown first -->
+    <div id="tapPanel" style="display:flex; flex-direction:column; align-items:center; gap:16px; width:100%;">
+      <button class="tap-btn" id="tapBtn">
+        <div class="tap-label">TAP</div>
+        <div class="tap-sub">BEAT</div>
+      </button>
+      <div class="tap-count" id="tapCount"></div>
+    </div>
+
     <!-- AUDIO PANEL -->
-    <div id="audioPanel">
+    <div id="audioPanel" style="display:none; flex-direction:column; align-items:center; gap:14px; width:100%;">
       <div class="waveform" id="waveform"></div>
 
       <div class="confidence-wrap" id="confidenceWrap" style="visibility:hidden;">
@@ -666,15 +650,6 @@
         <div class="btn-label" id="audioBtnLabel">START</div>
       </div>
     </div>
-
-    <!-- TAP PANEL -->
-    <div id="tapPanel">
-      <button class="tap-btn" id="tapBtn">
-        <div class="tap-label">TAP</div>
-        <div class="tap-sub">BEAT</div>
-      </button>
-      <div class="tap-count" id="tapCount"></div>
-    </div>
   </main>
 
   <section class="history-section">
@@ -685,10 +660,7 @@
   </section>
 
   <footer>
-    <div class="footer-left">
-      <div class="footer-copy">© 2026 SIMON PLEYER</div>
-      <div class="footer-visits" id="visitCount"></div>
-    </div>
+    <div class="footer-copy">© 2026 SIMON PLEYER</div>
     <div class="footer-links">
       <a href="#" onclick="openModal('impressum'); return false;">Impressum</a>
       <a href="#" onclick="openModal('datenschutz'); return false;">Datenschutz</a>
@@ -702,12 +674,7 @@
       <div class="modal-h1">IMPRESSUM</div>
       <div class="modal-p">Angaben gemäß §5 TMG</div>
       <div class="modal-h2">BETREIBER</div>
-      <div class="modal-p">
-        Simon Pleyer<br>
-        Bellermannstr. 82<br>
-        13357 Berlin<br>
-        Deutschland
-      </div>
+      <div class="modal-p">Simon Pleyer<br>Bellermannstr. 82<br>13357 Berlin<br>Deutschland</div>
       <div class="modal-h2">KONTAKT</div>
       <div class="modal-p">E-Mail: simonpleyer@googlemail.com</div>
       <div class="modal-h2">VERANTWORTLICH FÜR DEN INHALT</div>
@@ -727,7 +694,7 @@
       <div class="modal-h2">SPEICHERUNG</div>
       <div class="modal-p">BPM-Messwerte werden im SessionStorage zwischengespeichert und beim Schließen des Tabs automatisch gelöscht. Es werden keine Cookies gesetzt.</div>
       <div class="modal-h2">ANALYSE / BESUCHERZÄHLER</div>
-      <div class="modal-p">Diese Website nutzt Counter.dev zur datenschutzfreundlichen Besucherzählung. Counter.dev speichert keine personenbezogenen Daten und setzt keine Cookies. Es werden ausschließlich anonyme Zugriffszahlen erfasst. Weitere Informationen: counter.dev/privacy</div>
+      <div class="modal-p">Diese Website nutzt Counter.dev zur datenschutzfreundlichen Besucherzählung. Counter.dev speichert keine personenbezogenen Daten und setzt keine Cookies. Weitere Informationen: counter.dev/privacy</div>
       <div class="modal-h2">SERVER-LOGS</div>
       <div class="modal-p">Der Hosting-Anbieter (Netlify) speichert technische Zugriffsdaten (IP, Zeitstempel) für max. 30 Tage. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.</div>
       <div class="modal-h2">DEINE RECHTE</div>
@@ -738,20 +705,20 @@
   <script>
     // ── GENRES ───────────────────────────────────────────────────────────────
     const GENRES = [
-      { max:  70, label: "DOWNTEMPO / AMBIENT" },
-      { max:  90, label: "HIP-HOP / TRAP" },
-      { max: 110, label: "TRIP-HOP / LO-FI" },
-      { max: 122, label: "DEEP HOUSE" },
-      { max: 128, label: "HOUSE" },
-      { max: 135, label: "TECH HOUSE" },
-      { max: 140, label: "TECHNO — MINIMAL" },
-      { max: 148, label: "TECHNO — PEAK TIME" },
-      { max: 155, label: "HARD TECHNO" },
-      { max: 175, label: "DRUM & BASS" },
-      { max: 999, label: "HARDCORE / GABBER" },
+      { max:  70, label: "Downtempo / Ambient" },
+      { max:  90, label: "Hip-Hop / Trap" },
+      { max: 110, label: "Trip-Hop / Lo-Fi" },
+      { max: 122, label: "Deep House" },
+      { max: 128, label: "House" },
+      { max: 135, label: "Tech House" },
+      { max: 140, label: "Techno — Minimal" },
+      { max: 148, label: "Techno — Peak Time" },
+      { max: 155, label: "Hard Techno" },
+      { max: 175, label: "Drum & Bass" },
+      { max: 999, label: "Hardcore / Gabber" },
     ];
 
-    function getGenre(bpm) { return GENRES.find(g => bpm < g.max)?.label || "UNKNOWN"; }
+    function getGenre(bpm) { return GENRES.find(g => bpm < g.max)?.label || "Unknown"; }
 
     // ── WAVEFORM ─────────────────────────────────────────────────────────────
     const BAR_COUNT = 26;
@@ -764,18 +731,16 @@
       bars.push(b);
     }
 
-    // ── SHARED ELEMENTS ───────────────────────────────────────────────────────
-    const bpmEl       = document.getElementById('bpmNumber');
-    const genreEl     = document.getElementById('genreTag');
-    const statusEl    = document.getElementById('statusLine');
-    const iphoneHint  = document.getElementById('iphoneHint');
+    // ── SHARED ───────────────────────────────────────────────────────────────
+    const bpmEl      = document.getElementById('bpmNumber');
+    const genreEl    = document.getElementById('genreTag');
+    const statusEl   = document.getElementById('statusLine');
+    const iphoneHint = document.getElementById('iphoneHint');
     let iphoneHintTimer = null;
 
-    // Show iPhone hint after 8s of listening with weak signal
-    function maybeShowIphoneHint() {
-      iphoneHintTimer = setTimeout(() => {
-        iphoneHint.classList.add('visible');
-      }, 8000);
+    function showIphoneHintAfter(ms) {
+      clearTimeout(iphoneHintTimer);
+      iphoneHintTimer = setTimeout(() => iphoneHint.classList.add('visible'), ms);
     }
 
     function hideIphoneHint() {
@@ -784,11 +749,11 @@
     }
 
     // ── MODE ─────────────────────────────────────────────────────────────────
-    let currentMode = 'audio';
+    let currentMode = 'tap';
 
     const HINTS = {
-      audio: 'Hold your device near the music and press start — waits for a stable result before displaying BPM.',
-      tap:   'Tap the button in time with the beat. Resets after 3 seconds of inactivity. Spacebar works on desktop.'
+      tap:   'Tap the button in time with the beat. Resets after 3 seconds of inactivity. Spacebar works on desktop.',
+      audio: 'Hold your device near the music and press start — result shown only when stable.'
     };
 
     function setMode(mode) {
@@ -798,10 +763,10 @@
         resetTap();
       }
       currentMode = mode;
-      document.getElementById('btnModeAudio').classList.toggle('active', mode === 'audio');
       document.getElementById('btnModeTap').classList.toggle('active', mode === 'tap');
-      document.getElementById('audioPanel').style.display = mode === 'audio' ? 'flex' : 'none';
+      document.getElementById('btnModeAudio').classList.toggle('active', mode === 'audio');
       document.getElementById('tapPanel').style.display   = mode === 'tap'   ? 'flex' : 'none';
+      document.getElementById('audioPanel').style.display = mode === 'audio' ? 'flex' : 'none';
       document.getElementById('modeHint').textContent = HINTS[mode];
       bpmEl.textContent = '—'; bpmEl.classList.add('dim');
       genreEl.textContent = ''; genreEl.classList.add('hidden');
@@ -809,17 +774,19 @@
       hideIphoneHint();
     }
 
-    // ── AUDIO STATE ───────────────────────────────────────────────────────────
+    // ── AUDIO ─────────────────────────────────────────────────────────────────
     let audioCtx = null, analyser = null, stream = null;
     let mediaRecorder = null, recordedChunks = [];
     let listening = false, animFrame = null;
     let startTime = null, progressInterval = null;
-    const MAX_DURATION = 25000;
-    const MIN_BEATS = 16;
-    const MIN_STABLE_S = 4;
+
+    const MAX_DURATION  = 15000; // 15 sec max
+    const MIN_BEATS     = 12;
+    const MIN_STABLE_S  = 2.5;
 
     let beatTimestamps = [], lastBeatTime = 0;
-    let currentBPM = null, stableStartTime = null, lastStableBPM = null;
+    let confirmedBPM = null; // only set when stable — never shown live
+    let stableStartTime = null, lastStableBPM = null;
     let energyHistory = [], signalQuality = 0;
 
     const audioBtnEl     = document.getElementById('audioBtn');
@@ -833,7 +800,7 @@
       document.getElementById('safariWarning').style.display = 'block';
 
     async function toggleListening() {
-      if (listening) { stopListening(false, null); return; }
+      if (listening) { stopListening(false, confirmedBPM); return; }
       await startListening();
     }
 
@@ -850,16 +817,16 @@
       analyser.fftSize = 2048;
       analyser.smoothingTimeConstant = 0.85;
 
-      const lowpass = audioCtx.createBiquadFilter();
-      lowpass.type = 'lowpass';
-      lowpass.frequency.value = 200;
-
+      // Bass-focused filter chain (60–200 Hz = kick drum range)
       const highpass = audioCtx.createBiquadFilter();
       highpass.type = 'highpass';
       highpass.frequency.value = 60;
 
-      const source = audioCtx.createMediaStreamSource(stream);
-      source.connect(highpass);
+      const lowpass = audioCtx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 200;
+
+      audioCtx.createMediaStreamSource(stream).connect(highpass);
       highpass.connect(lowpass);
       lowpass.connect(analyser);
 
@@ -873,18 +840,21 @@
         mediaRecorder.start(500);
       } catch(e) { mediaRecorder = null; }
 
-      beatTimestamps = []; lastBeatTime = 0; currentBPM = null;
-      stableStartTime = null; lastStableBPM = null;
+      // Reset all tracking state
+      beatTimestamps = []; lastBeatTime = 0;
+      confirmedBPM = null; stableStartTime = null; lastStableBPM = null;
       energyHistory = []; signalQuality = 0;
       startTime = Date.now(); listening = true;
 
       audioBtnEl.classList.add('listening');
       audioBtnLbl.textContent = 'STOP';
-      bpmEl.classList.remove('dim'); bpmEl.textContent = '—';
+
+      // BPM display stays at — until result is confirmed
+      bpmEl.textContent = '—'; bpmEl.classList.add('dim');
       genreEl.classList.add('hidden');
-      statusEl.textContent = 'LISTENING — ANALYSING BEAT...';
+      statusEl.textContent = 'ANALYSING...';
       hideIphoneHint();
-      maybeShowIphoneHint();
+      showIphoneHintAfter(9000); // show hint after 9s of listening
 
       progressWrap.style.visibility = 'visible';
       confidenceWrap.style.visibility = 'visible';
@@ -894,7 +864,7 @@
       progressInterval = setInterval(() => {
         const elapsed = Date.now() - startTime;
         progressBar.style.width = Math.min(100, (elapsed / MAX_DURATION) * 100) + '%';
-        if (elapsed >= MAX_DURATION) stopListening(true, currentBPM);
+        if (elapsed >= MAX_DURATION) stopListening(true, confirmedBPM);
       }, 300);
 
       bars.forEach(b => b.classList.add('active'));
@@ -910,14 +880,17 @@
       const doFinish = (blob) => {
         if (finalBPM) {
           const genre = getGenre(finalBPM);
-          bpmEl.textContent = finalBPM; bpmEl.classList.remove('dim');
-          genreEl.textContent = genre; genreEl.classList.remove('hidden');
-          statusEl.textContent = auto ? 'RESULT CONFIRMED — AUTO STOP' : 'MANUAL STOP';
+          bpmEl.textContent = finalBPM;
+          bpmEl.classList.remove('dim');
+          genreEl.textContent = genre;
+          genreEl.classList.remove('hidden');
+          statusEl.textContent = auto ? 'CONFIRMED — AUTO STOP' : 'MANUAL STOP';
           addToHistory(finalBPM, genre, 'AUDIO', blob);
         } else {
-          bpmEl.classList.add('dim'); bpmEl.textContent = '—';
+          bpmEl.classList.add('dim');
+          bpmEl.textContent = '—';
           genreEl.classList.add('hidden');
-          statusEl.textContent = 'NO CLEAR BEAT DETECTED — MOVE CLOSER TO THE MUSIC OR USE TAP MODE';
+          statusEl.textContent = 'NO BEAT FOUND — TRY AGAIN OR USE TAP';
         }
       };
 
@@ -942,6 +915,7 @@
       confidenceWrap.style.visibility = 'hidden';
     }
 
+    // ── DETECT LOOP ───────────────────────────────────────────────────────────
     function detectLoop() {
       if (!listening) return;
 
@@ -949,18 +923,21 @@
       const data = new Float32Array(bufLen);
       analyser.getFloatTimeDomainData(data);
 
+      // RMS energy of bass-filtered signal
       let sum = 0;
       for (let i = 0; i < bufLen; i++) sum += data[i] * data[i];
       const rms = Math.sqrt(sum / bufLen);
 
+      // Waveform visualiser
       const freqData = new Uint8Array(bufLen);
       analyser.getByteFrequencyData(freqData);
       const step = Math.floor(bufLen / BAR_COUNT);
       for (let i = 0; i < BAR_COUNT; i++)
         bars[i].style.height = Math.max(4, (freqData[i * step] / 255) * 42) + 'px';
 
+      // Adaptive threshold — longer window for stability (2.5 sec)
       energyHistory.push(rms);
-      if (energyHistory.length > 80) energyHistory.shift();
+      if (energyHistory.length > 150) energyHistory.shift();
 
       const avgEnergy = energyHistory.reduce((a, b) => a + b, 0) / energyHistory.length;
       const ratio = avgEnergy > 0 ? rms / avgEnergy : 0;
@@ -968,25 +945,28 @@
       confidenceFill.style.width = (signalQuality * 100) + '%';
 
       const now = Date.now();
-      const threshold = avgEnergy * 1.4;
+      const elapsed = now - startTime;
 
-      if (rms > threshold && rms > 0.01 && (now - lastBeatTime) > 250) {
+      // Beat detection: local peak above adaptive threshold
+      const threshold = avgEnergy * 1.4;
+      if (rms > threshold && rms > 0.008 && (now - lastBeatTime) > 250) {
         beatTimestamps.push(now);
         lastBeatTime = now;
         if (beatTimestamps.length > 24) beatTimestamps.shift();
       }
 
       const beatCount = beatTimestamps.length;
-      const elapsed = Date.now() - startTime;
 
+      // Status — single short line to prevent layout shift
       if (beatCount < 4) {
         if (elapsed > 6000 && signalQuality < 0.1) {
-          statusEl.textContent = 'WEAK SIGNAL — MOVE CLOSER TO THE MUSIC OR USE TAP MODE';
+          statusEl.textContent = 'WEAK SIGNAL — MOVE CLOSER';
           iphoneHint.classList.add('visible');
         } else {
-          statusEl.textContent = 'LISTENING — ANALYSING BEAT...';
+          statusEl.textContent = 'ANALYSING...';
         }
       } else if (beatCount >= 4) {
+        // Compute BPM with IQR outlier removal
         const intervals = [];
         for (let i = 1; i < beatTimestamps.length; i++)
           intervals.push(beatTimestamps[i] - beatTimestamps[i - 1]);
@@ -999,32 +979,28 @@
 
         if (filtered.length >= 2) {
           const avg = filtered.reduce((a, b) => a + b, 0) / filtered.length;
-          const bpm = Math.round(60000 / avg);
+          let bpm = Math.round(60000 / avg);
+
+          // Tempo octave correction for House/Techno
+          if (bpm < 90 && bpm * 2 <= 220)  bpm *= 2;
+          if (bpm > 160 && bpm / 2 >= 40)   bpm = Math.round(bpm / 2);
 
           if (bpm >= 40 && bpm <= 220) {
-            currentBPM = bpm;
-
-            if (beatCount >= 8) {
-              bpmEl.textContent = bpm;
-              genreEl.textContent = getGenre(bpm);
-              genreEl.classList.remove('hidden');
-            }
-
+            // Stability check — BPM must hold for MIN_STABLE_S
             if (lastStableBPM !== null && Math.abs(bpm - lastStableBPM) <= 3) {
               if (stableStartTime === null) stableStartTime = now;
               const stableSecs = (now - stableStartTime) / 1000;
 
-              statusEl.textContent = beatCount >= MIN_BEATS
-                ? `STABLE — ${Math.round(stableSecs)}s CONFIRMED`
-                : `MEASURING... ${beatCount} BEATS DETECTED`;
+              statusEl.textContent = `STABLE ${Math.round(stableSecs * 10) / 10}s`;
 
               if (stableSecs >= MIN_STABLE_S && beatCount >= MIN_BEATS) {
+                confirmedBPM = bpm;
                 stopListening(true, bpm);
                 return;
               }
             } else {
               stableStartTime = null;
-              if (beatCount >= 8) statusEl.textContent = `CALIBRATING... ${beatCount} BEATS`;
+              statusEl.textContent = `CALIBRATING...`;
             }
             lastStableBPM = bpm;
           }
@@ -1034,33 +1010,13 @@
       animFrame = requestAnimationFrame(detectLoop);
     }
 
-    // ── TAP MODE ─────────────────────────────────────────────────────────────
+    // ── TAP ──────────────────────────────────────────────────────────────────
     let tapTimes = [], tapResetTimer = null, tapBPM = null, lastTapTime = 0;
-
-    // Metronome click sound
-    function playClick() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 1000;
-        osc.type = 'sine';
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.05);
-        osc.onended = () => ctx.close();
-      } catch(e) {}
-    }
 
     function handleTap() {
       const now = Date.now();
-      if (now - lastTapTime < 100) return; // debounce
+      if (now - lastTapTime < 100) return;
       lastTapTime = now;
-
-      playClick();
 
       const btn = document.getElementById('tapBtn');
       btn.classList.add('flash');
@@ -1090,9 +1046,8 @@
         tapBPM = bpm;
         bpmEl.textContent = bpm; bpmEl.classList.remove('dim');
         genreEl.textContent = getGenre(bpm); genreEl.classList.remove('hidden');
-        const n = tapTimes.length;
-        statusEl.textContent = n < 4 ? 'TAP MORE FOR ACCURACY' : 'STABLE';
-        countEl.textContent = `${n} TAPS`;
+        statusEl.textContent = tapTimes.length < 4 ? 'TAP MORE FOR ACCURACY' : 'STABLE';
+        countEl.textContent = `${tapTimes.length} TAPS`;
       }
     }
 
@@ -1106,8 +1061,7 @@
       }
     }
 
-    const tapBtnEl = document.getElementById('tapBtn');
-    tapBtnEl.addEventListener('pointerdown', e => {
+    document.getElementById('tapBtn').addEventListener('pointerdown', e => {
       e.preventDefault();
       if (currentMode === 'tap') handleTap();
     });
@@ -1118,8 +1072,8 @@
 
     // ── HISTORY ──────────────────────────────────────────────────────────────
     const history = [];
-    let currentAudio = null;
-    let currentPlayBtn = null;
+    let activeAudio = null;
+    let activeBtn = null;
 
     function addToHistory(bpm, genre, source, audioBlob = null) {
       const timeStr = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -1155,23 +1109,26 @@
       });
     }
 
-    function togglePlayback(idx, btn) {
-      // If something is already playing, stop it
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-        currentAudio = null;
-        if (currentPlayBtn) {
-          currentPlayBtn.classList.remove('playing');
-          currentPlayBtn = null;
-        }
-        // If same button, just stop
-        if (btn.classList.contains('playing') === false && currentPlayBtn !== btn) {
-          // was a different button — now start the new one
-        } else {
-          return;
-        }
+    function stopActiveAudio() {
+      if (activeAudio) {
+        activeAudio.pause();
+        activeAudio.src = '';
+        activeAudio = null;
       }
+      if (activeBtn) {
+        activeBtn.classList.remove('playing');
+        activeBtn = null;
+      }
+    }
+
+    function togglePlayback(idx, btn) {
+      const isSameBtn = btn === activeBtn;
+
+      // Always stop current playback first
+      stopActiveAudio();
+
+      // If we tapped the same button that was playing, just stop (don't restart)
+      if (isSameBtn) return;
 
       const entry = history[idx];
       if (!entry?.audioBlob) return;
@@ -1179,25 +1136,22 @@
       try {
         const url = URL.createObjectURL(entry.audioBlob);
         const audio = new Audio(url);
-        currentAudio = audio;
-        currentPlayBtn = btn;
-        btn.classList.add('playing');
 
-        audio.play().catch(e => {
-          btn.classList.remove('playing');
-          currentAudio = null;
-          currentPlayBtn = null;
-        });
+        audio.play().then(() => {
+          activeAudio = audio;
+          activeBtn = btn;
+          btn.classList.add('playing');
 
-        audio.onended = () => {
-          btn.classList.remove('playing');
-          currentAudio = null;
-          currentPlayBtn = null;
+          audio.onended = () => {
+            btn.classList.remove('playing');
+            activeAudio = null;
+            activeBtn = null;
+            URL.revokeObjectURL(url);
+          };
+        }).catch(() => {
           URL.revokeObjectURL(url);
-        };
-      } catch(e) {
-        btn.classList.remove('playing');
-      }
+        });
+      } catch(e) {}
     }
 
     // ── MODALS ───────────────────────────────────────────────────────────────
