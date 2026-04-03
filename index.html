@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>BPM</title>
   <meta name="description" content="Real-time BPM detector. Use your microphone or tap the beat manually." />
   <meta name="theme-color" content="#000000" />
@@ -59,25 +59,6 @@
       margin-top: -2px;
     }
 
-    .header-links {
-      display: flex;
-      gap: 16px;
-      padding-top: 8px;
-    }
-
-    .header-links a {
-      font-size: 10px;
-      letter-spacing: 2px;
-      color: var(--muted);
-      text-decoration: none;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 1px;
-      transition: color 0.2s, border-color 0.2s;
-    }
-
-    .header-links a:hover { color: var(--fg); border-color: var(--fg); }
-
     /* ── ABOUT ── */
     .about {
       margin: 20px 24px 0;
@@ -124,6 +105,7 @@
       cursor: pointer;
       transition: background 0.2s, color 0.2s;
       -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
     .mode-btn.active { background: var(--fg); color: var(--bg); }
@@ -190,10 +172,11 @@
     .status-line {
       margin-top: 6px;
       font-size: 10px;
-      letter-spacing: 3px;
+      letter-spacing: 2px;
       color: var(--muted);
       text-transform: uppercase;
       min-height: 16px;
+      line-height: 1.6;
     }
 
     /* ── WAVEFORM ── */
@@ -214,6 +197,38 @@
     }
 
     .waveform-bar.active { opacity: 1; }
+
+    /* ── CONFIDENCE BAR ── */
+    .confidence-wrap {
+      width: 100%;
+      max-width: 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .confidence-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .confidence-track {
+      height: 2px;
+      background: var(--border);
+      width: 100%;
+      position: relative;
+    }
+
+    .confidence-fill {
+      position: absolute;
+      left: 0; top: 0;
+      height: 100%;
+      background: var(--fg);
+      width: 0%;
+      transition: width 0.4s ease;
+    }
 
     /* ── PROGRESS ── */
     .progress-wrap {
@@ -246,6 +261,7 @@
       justify-content: center;
       transition: background 0.2s, transform 0.1s;
       -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
     .audio-btn:active { transform: scale(0.93); }
@@ -283,7 +299,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 18px;
+      gap: 16px;
     }
 
     /* ── TAP PANEL ── */
@@ -306,15 +322,17 @@
       align-items: center;
       justify-content: center;
       gap: 2px;
-      transition: background 0.07s, transform 0.07s;
+      /* Prevent zoom on double tap iOS */
+      touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       -webkit-user-select: none;
+      transition: background 0.07s;
     }
 
     .tap-btn.flash { background: var(--fg); }
-    .tap-btn.flash .tap-label { color: var(--bg); }
-    .tap-btn.flash .tap-sub   { color: var(--bg); }
+    .tap-btn.flash .tap-label,
+    .tap-btn.flash .tap-sub { color: var(--bg); }
 
     .tap-label {
       font-family: 'Bebas Neue', sans-serif;
@@ -346,7 +364,7 @@
     .history-section {
       width: 100%;
       max-width: 480px;
-      padding: 0 24px 48px;
+      padding: 0 24px 8px;
     }
 
     .history-title {
@@ -407,6 +425,7 @@
       justify-content: center;
       flex-shrink: 0;
       -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
       transition: border-color 0.2s;
     }
 
@@ -421,6 +440,42 @@
     }
 
     .play-btn.no-audio { opacity: 0.15; cursor: default; pointer-events: none; }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .footer-copy {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-decoration: none;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--fg); border-color: var(--fg); }
 
     /* ── MODALS ── */
     .modal-overlay {
@@ -447,6 +502,7 @@
       background: none;
       border: none;
       color: var(--muted);
+      touch-action: manipulation;
     }
 
     .modal-close:hover { color: var(--fg); }
@@ -474,15 +530,6 @@
       line-height: 1.8;
       color: #999;
     }
-
-    /* ── FOOTER ── */
-    footer {
-      padding: 12px 24px;
-      border-top: 1px solid var(--border);
-      font-size: 10px;
-      letter-spacing: 2px;
-      color: var(--muted);
-    }
   </style>
 </head>
 <body>
@@ -492,19 +539,15 @@
       <div class="title-main">BPM</div>
       <div class="title-sub">BEATS PER MINUTE</div>
     </div>
-    <div class="header-links">
-      <a href="#" onclick="openModal('impressum'); return false;">Impressum</a>
-      <a href="#" onclick="openModal('datenschutz'); return false;">Datenschutz</a>
-    </div>
   </header>
 
   <div class="about">
     <div class="about-text">
       <strong>BPM</strong> tells you the tempo of any song in real time.
       Use <strong>AUDIO</strong> mode to detect BPM automatically via microphone —
-      just hold your phone near the music.
+      just hold your phone near the music and wait for a stable result.
       Or switch to <strong>TAP</strong> mode and tap along with the beat manually.
-      Works for any genre — optimised for House &amp; Techno.
+      Optimised for House &amp; Techno.
     </div>
   </div>
 
@@ -519,7 +562,7 @@
   </div>
 
   <div class="mode-hint" id="modeHint">
-    Hold your device near the music and press start — BPM detects automatically.
+    Hold your device near the music and press start — waits for a stable result before displaying BPM.
   </div>
 
   <main>
@@ -533,9 +576,18 @@
     <!-- AUDIO PANEL -->
     <div id="audioPanel">
       <div class="waveform" id="waveform"></div>
+
+      <div class="confidence-wrap" id="confidenceWrap" style="visibility:hidden;">
+        <div class="confidence-label">SIGNAL CONFIDENCE</div>
+        <div class="confidence-track">
+          <div class="confidence-fill" id="confidenceFill"></div>
+        </div>
+      </div>
+
       <div class="progress-wrap" id="progressWrap" style="visibility:hidden;">
         <div class="progress-bar" id="progressBar"></div>
       </div>
+
       <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
         <button class="audio-btn" id="audioBtn" onclick="toggleListening()">
           <div class="btn-icon-play"></div>
@@ -547,7 +599,7 @@
 
     <!-- TAP PANEL -->
     <div id="tapPanel">
-      <button class="tap-btn" id="tapBtn" onclick="handleTap()">
+      <button class="tap-btn" id="tapBtn">
         <div class="tap-label">TAP</div>
         <div class="tap-sub">BEAT</div>
       </button>
@@ -562,7 +614,13 @@
     </div>
   </section>
 
-  <footer>© 2026 SIMON PLEYER &nbsp;·&nbsp; SIMONPLEYER.DE</footer>
+  <footer>
+    <div class="footer-copy">© 2026 SIMON PLEYER</div>
+    <div class="footer-links">
+      <a href="#" onclick="openModal('impressum'); return false;">Impressum</a>
+      <a href="#" onclick="openModal('datenschutz'); return false;">Datenschutz</a>
+    </div>
+  </footer>
 
   <!-- IMPRESSUM -->
   <div class="modal-overlay" id="modal-impressum">
@@ -598,6 +656,7 @@
   </div>
 
   <script>
+    // ── GENRES ───────────────────────────────────────────────────────────────
     const GENRES = [
       { max:  70, label: "DOWNTEMPO / AMBIENT" },
       { max:  90, label: "HIP-HOP / TRAP" },
@@ -614,7 +673,7 @@
 
     function getGenre(bpm) { return GENRES.find(g => bpm < g.max)?.label || "UNKNOWN"; }
 
-    // Waveform bars
+    // ── WAVEFORM ─────────────────────────────────────────────────────────────
     const BAR_COUNT = 26;
     const waveformEl = document.getElementById('waveform');
     const bars = [];
@@ -625,7 +684,7 @@
       bars.push(b);
     }
 
-    // Shared elements
+    // ── SHARED ELEMENTS ───────────────────────────────────────────────────────
     const bpmEl    = document.getElementById('bpmNumber');
     const genreEl  = document.getElementById('genreTag');
     const statusEl = document.getElementById('statusLine');
@@ -634,14 +693,14 @@
     let currentMode = 'audio';
 
     const HINTS = {
-      audio: 'Hold your device near the music and press start — BPM detects automatically.',
-      tap:   'Tap the button in time with the beat. Resets automatically after 3 seconds of inactivity. Spacebar works too.'
+      audio: 'Hold your device near the music and press start — waits for a stable result before displaying BPM.',
+      tap:   'Tap the button in time with the beat. Resets after 3 seconds of inactivity. Spacebar works on desktop.'
     };
 
     function setMode(mode) {
       if (currentMode === 'audio' && listening) stopListening();
       if (currentMode === 'tap') {
-        if (tapBPM) addToHistory(tapBPM, getGenre(tapBPM), 'TAP');
+        if (tapBPM !== null) addToHistory(tapBPM, getGenre(tapBPM), 'TAP');
         resetTap();
       }
       currentMode = mode;
@@ -655,166 +714,306 @@
       statusEl.textContent = '';
     }
 
-    // ── AUDIO ─────────────────────────────────────────────────────────────────
+    // ── AUDIO STATE ───────────────────────────────────────────────────────────
     let audioCtx = null, analyser = null, stream = null;
     let mediaRecorder = null, recordedChunks = [];
     let listening = false, animFrame = null;
     let startTime = null, progressInterval = null;
-    let beatTimestamps = [], lastBeatTime = 0, lastBPM = null, stableCount = 0;
-    const MAX_DURATION = 20000;
+    const MAX_DURATION = 25000; // 25 seconds max
+    const MIN_BEATS_FOR_RESULT = 16; // need at least 16 beats
+    const MIN_STABLE_SECONDS = 4;   // BPM must be stable for 4 seconds
+
+    // Beat tracking
+    let beatTimestamps = [];
+    let lastBeatTime = 0;
+    let currentBPM = null;
+    let stableStartTime = null;
+    let lastStableBPM = null;
+
+    // Adaptive threshold state
+    let energyHistory = [];
+    let signalQuality = 0; // 0–1
 
     const audioBtnEl  = document.getElementById('audioBtn');
     const audioBtnLbl = document.getElementById('audioBtnLabel');
     const progressWrap = document.getElementById('progressWrap');
     const progressBar  = document.getElementById('progressBar');
+    const confidenceWrap = document.getElementById('confidenceWrap');
+    const confidenceFill = document.getElementById('confidenceFill');
 
     if (/CriOS/.test(navigator.userAgent))
       document.getElementById('safariWarning').style.display = 'block';
 
     async function toggleListening() {
-      if (listening) { stopListening(); return; }
+      if (listening) { stopListening(false); return; }
       await startListening();
     }
 
     async function startListening() {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      } catch(e) { statusEl.textContent = 'MICROPHONE ACCESS DENIED'; return; }
+      } catch(e) {
+        statusEl.textContent = 'MICROPHONE ACCESS DENIED';
+        return;
+      }
 
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 1024;
-      analyser.smoothingTimeConstant = 0.3;
-      audioCtx.createMediaStreamSource(stream).connect(analyser);
 
+      // ── IMPROVED ALGORITHM: Bass-focused analysis ──
+      // We filter to 60–200 Hz (kick drum range) for better beat detection
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.85; // smoother = less false positives
+
+      // Bandpass filter focused on kick drum frequencies
+      const lowpass = audioCtx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 200; // only below 200 Hz
+
+      const highpass = audioCtx.createBiquadFilter();
+      highpass.type = 'highpass';
+      highpass.frequency.value = 60; // only above 60 Hz
+
+      const source = audioCtx.createMediaStreamSource(stream);
+      source.connect(highpass);
+      highpass.connect(lowpass);
+      lowpass.connect(analyser);
+
+      // MediaRecorder on raw stream (unfiltered, for playback)
       recordedChunks = [];
       try {
-        mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
-        mediaRecorder.start(100);
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+        mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+        mediaRecorder.ondataavailable = e => {
+          if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+        };
+        mediaRecorder.start(500); // chunk every 500ms for reliable capture
       } catch(e) { mediaRecorder = null; }
 
-      beatTimestamps = []; lastBeatTime = 0; lastBPM = null; stableCount = 0;
-      startTime = Date.now(); listening = true;
+      // Reset all state
+      beatTimestamps = []; lastBeatTime = 0; currentBPM = null;
+      stableStartTime = null; lastStableBPM = null; energyHistory = [];
+      signalQuality = 0; startTime = Date.now(); listening = true;
 
       audioBtnEl.classList.add('listening');
       audioBtnLbl.textContent = 'STOP';
       bpmEl.classList.remove('dim'); bpmEl.textContent = '—';
       genreEl.classList.add('hidden');
-      statusEl.textContent = 'LISTENING...';
+      statusEl.textContent = 'LISTENING — ANALYSING BEAT...';
+
       progressWrap.style.visibility = 'visible';
+      confidenceWrap.style.visibility = 'visible';
       progressBar.style.width = '0%';
+      confidenceFill.style.width = '0%';
 
       progressInterval = setInterval(() => {
         const elapsed = Date.now() - startTime;
         progressBar.style.width = Math.min(100, (elapsed / MAX_DURATION) * 100) + '%';
         if (elapsed >= MAX_DURATION) stopListening(true);
-      }, 200);
+      }, 300);
 
       bars.forEach(b => b.classList.add('active'));
       detectLoop();
     }
 
-    function stopListening(auto = false) {
+    function stopListening(auto = false, finalBPM = null) {
       listening = false;
       clearInterval(progressInterval);
       cancelAnimationFrame(animFrame);
-      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+
+      // Stop recorder THEN wait for final data
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.onstop = () => {
+          const mimeType = mediaRecorder.mimeType || 'audio/webm';
+          const blob = recordedChunks.length > 0
+            ? new Blob(recordedChunks, { type: mimeType }) : null;
+          if (finalBPM) {
+            const genre = getGenre(finalBPM);
+            addToHistory(finalBPM, genre, 'AUDIO', blob);
+          }
+        };
+        mediaRecorder.stop();
+      } else {
+        if (finalBPM) {
+          const genre = getGenre(finalBPM);
+          addToHistory(finalBPM, genre, 'AUDIO', null);
+        }
+      }
+
       if (stream) stream.getTracks().forEach(t => t.stop());
-      if (audioCtx) audioCtx.close();
+      if (audioCtx) audioCtx.close().catch(()=>{});
 
       audioBtnEl.classList.remove('listening');
       audioBtnLbl.textContent = 'START';
       bars.forEach(b => { b.style.height = '4px'; b.classList.remove('active'); });
       progressWrap.style.visibility = 'hidden';
+      confidenceWrap.style.visibility = 'hidden';
 
-      if (lastBPM) {
-        const genre = getGenre(lastBPM);
-        bpmEl.textContent = lastBPM; bpmEl.classList.remove('dim');
+      if (finalBPM) {
+        const genre = getGenre(finalBPM);
+        bpmEl.textContent = finalBPM; bpmEl.classList.remove('dim');
         genreEl.textContent = genre; genreEl.classList.remove('hidden');
-        statusEl.textContent = auto ? 'AUTO STOP — RESULT STABLE' : 'MANUAL STOP';
-        setTimeout(() => {
-          const blob = recordedChunks.length ? new Blob(recordedChunks, { type: 'audio/webm' }) : null;
-          addToHistory(lastBPM, genre, 'AUDIO', blob);
-        }, 300);
+        statusEl.textContent = auto ? 'RESULT CONFIRMED — AUTO STOP' : 'MANUAL STOP';
       } else {
         bpmEl.classList.add('dim'); bpmEl.textContent = '—';
         genreEl.classList.add('hidden');
-        statusEl.textContent = 'NO RESULT — TRY AGAIN';
+        statusEl.textContent = 'NO CLEAR BEAT DETECTED — TRY MOVING CLOSER TO THE MUSIC, OR USE TAP MODE';
       }
     }
 
+    // ── IMPROVED BEAT DETECTION LOOP ─────────────────────────────────────────
     function detectLoop() {
       if (!listening) return;
-      const bufLen = analyser.frequencyBinCount;
-      const data = new Uint8Array(bufLen);
-      analyser.getByteTimeDomainData(data);
 
+      const bufLen = analyser.frequencyBinCount; // 1024
+      const data = new Float32Array(bufLen);
+      analyser.getFloatTimeDomainData(data);
+
+      // RMS of bass-filtered signal
       let sum = 0;
-      for (let i = 0; i < bufLen; i++) { const v = (data[i]-128)/128; sum += v*v; }
+      for (let i = 0; i < bufLen; i++) { sum += data[i] * data[i]; }
       const rms = Math.sqrt(sum / bufLen);
 
+      // Waveform visualiser (use frequency data for display)
       const freqData = new Uint8Array(bufLen);
       analyser.getByteFrequencyData(freqData);
       const step = Math.floor(bufLen / BAR_COUNT);
       for (let i = 0; i < BAR_COUNT; i++)
-        bars[i].style.height = Math.max(4, (freqData[i*step]/255)*42) + 'px';
+        bars[i].style.height = Math.max(4, (freqData[i * step] / 255) * 42) + 'px';
+
+      // Adaptive threshold: compare current energy to recent average
+      energyHistory.push(rms);
+      if (energyHistory.length > 80) energyHistory.shift(); // ~1.3 seconds of history
+
+      const avgEnergy = energyHistory.reduce((a, b) => a + b, 0) / energyHistory.length;
+
+      // Signal quality: how much energy is there vs background
+      const ratio = avgEnergy > 0 ? rms / avgEnergy : 0;
+      signalQuality = Math.min(1, Math.max(0, (ratio - 0.8) / 2));
+      confidenceFill.style.width = (signalQuality * 100) + '%';
 
       const now = Date.now();
-      if (rms > 0.05 && (now - lastBeatTime) > 200) {
+      const timeSinceLast = now - lastBeatTime;
+
+      // Beat = energy spike above adaptive threshold, with refractory period
+      // Threshold: current must be > 1.4x the recent average AND > min silence period
+      const threshold = avgEnergy * 1.4;
+      const minInterval = 250; // 250ms = max 240 BPM, won't double-trigger
+
+      if (rms > threshold && rms > 0.01 && timeSinceLast > minInterval) {
         beatTimestamps.push(now);
         lastBeatTime = now;
-        if (beatTimestamps.length > 16) beatTimestamps.shift();
+        if (beatTimestamps.length > 24) beatTimestamps.shift();
+      }
 
-        if (beatTimestamps.length > 4) {
-          const iv = [];
-          for (let i = 1; i < beatTimestamps.length; i++) iv.push(beatTimestamps[i]-beatTimestamps[i-1]);
-          iv.sort((a,b)=>a-b);
-          const mid = Math.floor(iv.length/2);
-          const median = iv.length%2===0 ? (iv[mid-1]+iv[mid])/2 : iv[mid];
-          const bpm = Math.round(60000/median);
+      // Update status based on beat count
+      const beatCount = beatTimestamps.length;
+      const elapsed = Date.now() - startTime;
 
-          if (bpm >= 40 && bpm <= 220) {
+      if (beatCount < 4) {
+        if (elapsed > 5000 && signalQuality < 0.1) {
+          statusEl.textContent = 'WEAK SIGNAL — MOVE CLOSER TO THE MUSIC OR USE TAP MODE';
+        } else {
+          statusEl.textContent = 'LISTENING — ANALYSING BEAT...';
+        }
+      } else if (beatCount >= 4) {
+        // Calculate BPM from intervals using median
+        const intervals = [];
+        for (let i = 1; i < beatTimestamps.length; i++)
+          intervals.push(beatTimestamps[i] - beatTimestamps[i-1]);
+
+        intervals.sort((a, b) => a - b);
+        // Use interquartile range to remove outliers
+        const q1 = intervals[Math.floor(intervals.length * 0.25)];
+        const q3 = intervals[Math.floor(intervals.length * 0.75)];
+        const iqr = q3 - q1;
+        const filtered = intervals.filter(v => v >= q1 - 1.5*iqr && v <= q3 + 1.5*iqr);
+
+        if (filtered.length < 2) { animFrame = requestAnimationFrame(detectLoop); return; }
+
+        const avg = filtered.reduce((a, b) => a + b, 0) / filtered.length;
+        const bpm = Math.round(60000 / avg);
+
+        if (bpm >= 40 && bpm <= 220) {
+          currentBPM = bpm;
+
+          // Show live BPM only once we have enough beats
+          if (beatCount >= 8) {
             bpmEl.textContent = bpm;
-            genreEl.textContent = getGenre(bpm); genreEl.classList.remove('hidden');
-            const n = beatTimestamps.length;
-            statusEl.textContent = n<6 ? 'DETECTING...' : n<10 ? 'MEASURING...' : 'STABLE';
-            if (lastBPM && Math.abs(bpm-lastBPM)<=2) {
-              stableCount++;
-              if (stableCount>=6 && n>=8) { lastBPM=bpm; stopListening(true); return; }
-            } else stableCount=0;
-            lastBPM = bpm;
+            genreEl.textContent = getGenre(bpm);
+            genreEl.classList.remove('hidden');
           }
+
+          // Stability check
+          if (lastStableBPM !== null && Math.abs(bpm - lastStableBPM) <= 3) {
+            if (stableStartTime === null) stableStartTime = now;
+            const stableDuration = (now - stableStartTime) / 1000;
+
+            if (beatCount >= MIN_BEATS_FOR_RESULT) {
+              statusEl.textContent = `STABLE — ${Math.round(stableDuration)}s CONFIRMED`;
+            } else {
+              statusEl.textContent = `MEASURING... ${beatCount} BEATS DETECTED`;
+            }
+
+            // Auto-stop: stable for MIN_STABLE_SECONDS AND enough beats
+            if (stableDuration >= MIN_STABLE_SECONDS && beatCount >= MIN_BEATS_FOR_RESULT) {
+              stopListening(true, bpm);
+              return;
+            }
+          } else {
+            stableStartTime = null;
+            if (beatCount >= 8) {
+              statusEl.textContent = `CALIBRATING... ${beatCount} BEATS`;
+            }
+          }
+          lastStableBPM = bpm;
         }
       }
+
       animFrame = requestAnimationFrame(detectLoop);
     }
 
-    // ── TAP ──────────────────────────────────────────────────────────────────
+    // ── TAP MODE ─────────────────────────────────────────────────────────────
     let tapTimes = [], tapResetTimer = null, tapBPM = null;
+    let lastTapEventTime = 0; // debounce
 
     function handleTap() {
       const now = Date.now();
+
+      // Debounce: ignore taps less than 100ms apart (prevents double-fire)
+      if (now - lastTapEventTime < 100) return;
+      lastTapEventTime = now;
+
       const btn = document.getElementById('tapBtn');
       btn.classList.add('flash');
-      setTimeout(() => btn.classList.remove('flash'), 110);
+      setTimeout(() => btn.classList.remove('flash'), 100);
 
-      if (tapTimes.length > 0 && (now - tapTimes[tapTimes.length-1]) > 3000) resetTap();
+      // Auto-reset if too long since last tap
+      if (tapTimes.length > 0 && (now - tapTimes[tapTimes.length - 1]) > 3000) resetTap();
 
       tapTimes.push(now);
       if (tapTimes.length > 16) tapTimes.shift();
 
       clearTimeout(tapResetTimer);
-      tapResetTimer = setTimeout(resetTap, 3000);
+      tapResetTimer = setTimeout(() => {
+        if (tapBPM !== null) addToHistory(tapBPM, getGenre(tapBPM), 'TAP');
+        resetTap();
+      }, 3000);
 
       const countEl = document.getElementById('tapCount');
 
-      if (tapTimes.length < 2) { countEl.textContent = 'KEEP TAPPING...'; return; }
+      if (tapTimes.length < 2) {
+        countEl.textContent = 'KEEP TAPPING...';
+        return;
+      }
 
-      const iv = [];
-      for (let i = 1; i < tapTimes.length; i++) iv.push(tapTimes[i]-tapTimes[i-1]);
-      const avg = iv.reduce((a,b)=>a+b,0)/iv.length;
-      const bpm = Math.round(60000/avg);
+      const intervals = [];
+      for (let i = 1; i < tapTimes.length; i++)
+        intervals.push(tapTimes[i] - tapTimes[i-1]);
+      const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+      const bpm = Math.round(60000 / avg);
 
       if (bpm >= 20 && bpm <= 300) {
         tapBPM = bpm;
@@ -836,7 +1035,20 @@
       }
     }
 
-    document.addEventListener('keydown', e => { if (!e.repeat && currentMode === 'tap') handleTap(); });
+    // Tap button events — use pointerdown for fastest response, no zoom issues
+    const tapBtnEl = document.getElementById('tapBtn');
+    tapBtnEl.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      if (currentMode === 'tap') handleTap();
+    });
+
+    // Spacebar on desktop — use keyup to avoid repeat firing
+    document.addEventListener('keyup', e => {
+      if (e.code === 'Space' && currentMode === 'tap') {
+        e.preventDefault();
+        handleTap();
+      }
+    });
 
     // ── HISTORY ──────────────────────────────────────────────────────────────
     const history = [];
@@ -853,36 +1065,53 @@
       document.getElementById('historyEmpty').style.display = 'none';
       Array.from(list.querySelectorAll('.history-item')).forEach(el => el.remove());
       history.forEach((entry, idx) => {
+        const hasAudio = !!entry.audioBlob;
         const item = document.createElement('div');
         item.className = 'history-item';
-        const hasAudio = !!entry.audioBlob;
         item.innerHTML = `
           <div class="history-bpm">${entry.bpm}</div>
           <div class="history-meta">
             <div class="history-genre">${entry.genre}</div>
             <div class="history-info">${entry.timeStr} · ${entry.source}</div>
           </div>
-          <button class="play-btn ${hasAudio?'':'no-audio'}" onclick="playAudio(${idx})">
+          <button class="play-btn ${hasAudio ? '' : 'no-audio'}" data-idx="${idx}" title="${hasAudio ? 'Play recording' : 'No audio (tap mode)'}">
             <div class="play-btn-icon"></div>
           </button>`;
         list.appendChild(item);
       });
+
+      // Attach play listeners
+      list.querySelectorAll('.play-btn:not(.no-audio)').forEach(btn => {
+        btn.addEventListener('click', () => playAudio(parseInt(btn.dataset.idx)));
+      });
     }
 
     function playAudio(idx) {
-      const e = history[idx];
-      if (!e?.audioBlob) return;
-      const url = URL.createObjectURL(e.audioBlob);
-      const a = new Audio(url);
-      a.play();
-      a.onended = () => URL.revokeObjectURL(url);
+      const entry = history[idx];
+      if (!entry?.audioBlob) return;
+      try {
+        const url = URL.createObjectURL(entry.audioBlob);
+        const audio = new Audio(url);
+        audio.play().catch(e => console.warn('Playback failed:', e));
+        audio.onended = () => URL.revokeObjectURL(url);
+      } catch(e) { console.warn('Audio replay error:', e); }
     }
 
     // ── MODALS ───────────────────────────────────────────────────────────────
-    function openModal(id) { document.getElementById('modal-'+id).classList.add('open'); document.body.style.overflow='hidden'; }
-    function closeModal(id) { document.getElementById('modal-'+id).classList.remove('open'); document.body.style.overflow=''; }
+    function openModal(id) {
+      document.getElementById('modal-' + id).classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(id) {
+      document.getElementById('modal-' + id).classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
     document.querySelectorAll('.modal-overlay').forEach(o => {
-      o.addEventListener('click', function(e) { if(e.target===this){ this.classList.remove('open'); document.body.style.overflow=''; }});
+      o.addEventListener('click', function(e) {
+        if (e.target === this) { this.classList.remove('open'); document.body.style.overflow = ''; }
+      });
     });
   </script>
 </body>
