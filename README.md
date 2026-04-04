@@ -1,2 +1,2 @@
 # bpm-detector
-BPM Detector Web App – simonpleyer.de/bpm
+BPM Detector Web App – bpm.simonpleyer.de
