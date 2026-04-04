@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BPM Test v5</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg:#000; --fg:#fff; --muted:#555; --border:#222; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Space Mono', monospace;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      padding: 20px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .title-main {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 40px;
+      letter-spacing: 4px;
+      line-height: 1;
+    }
+
+    .title-sub {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-top: 3px;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .record-btn {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 17px;
+      letter-spacing: 4px;
+      padding: 10px 24px;
+      border: 2px solid var(--fg);
+      background: transparent;
+      color: var(--fg);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .record-btn.recording { background: var(--fg); color: var(--bg); }
+
+    .status-text {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      flex: 1;
+    }
+
+    .progress-wrap {
+      height: 2px;
+      background: var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      position: absolute;
+      left: 0; top: 0; height: 100%;
+      background: var(--fg);
+      width: 0%;
+      transition: width 0.3s linear;
+    }
+
+    .signal-wrap {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .signal-label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .signal-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      position: relative;
+    }
+
+    .signal-fill {
+      position: absolute;
+      left: 0; top: 0; height: 100%;
+      background: var(--fg);
+      width: 0%;
+      transition: width 0.1s ease;
+    }
+
+    .signal-db {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      min-width: 64px;
+      text-align: right;
+    }
+
+    .waveform-wrap {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      height: 36px;
+    }
+
+    .waveform-bar {
+      width: 3px;
+      background: var(--fg);
+      border-radius: 1px;
+      height: 3px;
+      opacity: 0.15;
+      transition: height 0.07s ease;
+    }
+
+    .waveform-bar.active { opacity: 1; }
+
+    /* BPM display */
+    .bpm-section {
+      padding: 24px 20px 20px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .bpm-state-label {
+      font-size: 9px;
+      letter-spacing: 4px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      min-height: 14px;
+    }
+
+    .bpm-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(80px, 22vw, 160px);
+      line-height: 1;
+      color: #222;
+      letter-spacing: -2px;
+      transition: color 0.4s;
+    }
+
+    .bpm-number.live   { color: #777; }
+    .bpm-number.stable { color: var(--fg); }
+
+    .bpm-unit {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px;
+      letter-spacing: 6px;
+      color: var(--muted);
+      margin-top: -6px;
+    }
+
+    .bpm-genre {
+      margin-top: 10px;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      min-height: 16px;
+    }
+
+    .bpm-meta {
+      margin-top: 6px;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      min-height: 14px;
+    }
+
+    .stable-tag {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 14px;
+      border: 1px solid var(--fg);
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--fg);
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .stable-tag.show { opacity: 1; }
+
+    /* Candidates */
+    .candidates-section {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .candidates-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .candidate-chip {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .candidate-chip.best { border-color: #555; color: #888; }
+
+    /* Log */
+    .log-section { padding: 10px 20px; border-top: 1px solid var(--border); }
+
+    .log {
+      font-size: 8px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      line-height: 1.8;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .log-entry.hi   { color: var(--fg); }
+    .log-entry.warn { color: #888; }
+
+    .notes { padding: 10px 20px 32px; border-top: 1px solid var(--border); }
+
+    .note {
+      font-size: 8px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      line-height: 1.9;
+      text-transform: uppercase;
+    }
+
+    .note span { color: #777; }
+
+    .live-dot {
+      display: inline-block;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #777;
+      margin-right: 4px;
+      animation: blink 1s ease-in-out infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.1} }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="title-main">BPM TEST v5</div>
+  <div class="title-sub">realtime-bpm-analyzer v5.0.4 — built for microphone · bpm + bpmStable events</div>
+</header>
+
+<div class="controls">
+  <button class="record-btn" id="recordBtn" onclick="toggleRecording()">⊙ START</button>
+  <div class="status-text" id="statusText">Ready — press start</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-fill" id="progressFill"></div>
+</div>
+
+<div class="signal-wrap">
+  <div class="signal-label">Signal</div>
+  <div class="signal-track"><div class="signal-fill" id="signalFill"></div></div>
+  <div class="signal-db" id="signalDb">— dB</div>
+</div>
+
+<div class="waveform-wrap">
+  <div class="section-label">Live input</div>
+  <div class="waveform" id="waveform"></div>
+</div>
+
+<div class="bpm-section">
+  <div class="bpm-state-label" id="bpmStateLabel">WAITING</div>
+  <div class="bpm-number" id="bpmNumber">—</div>
+  <div class="bpm-unit">BPM</div>
+  <div class="bpm-genre" id="bpmGenre"></div>
+  <div class="bpm-meta" id="bpmMeta"></div>
+  <div class="stable-tag" id="stableTag">✓ CONFIRMED STABLE</div>
+</div>
+
+<div class="candidates-section">
+  <div class="section-label">Top candidates</div>
+  <div class="candidates-row" id="candidatesRow">
+    <div class="candidate-chip">—</div>
+  </div>
+</div>
+
+<div class="log-section">
+  <div class="section-label" style="margin-bottom:6px;">Log</div>
+  <div class="log" id="log"></div>
+</div>
+
+<div class="notes">
+  <div class="note">· <span>Grey BPM</span> = live estimate. <span>White BPM</span> = stable confirmed result.</div>
+  <div class="note">· Library fires <span>bpmStable</span> when result is reliable — then stops automatically.</div>
+  <div class="note">· BPM range 90–180 (library default). Octave correction applied for edge cases.</div>
+  <div class="note">· <span>iPhone:</span> Safari only + Wide Spectrum in Control Center while recording.</div>
+  <div class="note">· Signal should be above 30% on the meter for reliable detection.</div>
+  <div class="note">· If no result after 30s: move closer to speaker or use Tap mode instead.</div>
+</div>
+
+<!-- Load realtime-bpm-analyzer as ES module -->
+<script type="module">
+  import { createRealtimeBpmAnalyzer } from './realtime-bpm-analyzer.esm.js';
+
+  // Expose to global scope for use in the regular script below
+  window._createRealtimeBpmAnalyzer = createRealtimeBpmAnalyzer;
+  window._libReady = true;
+  console.log('[v5] realtime-bpm-analyzer loaded OK');
+</script>
+
+<script>
+  // ── GENRES ────────────────────────────────────────────────────────────────
+  const GENRES = [
+    { max: 70,  label: "Downtempo" },
+    { max: 90,  label: "Hip-Hop / Trap" },
+    { max: 110, label: "Trip-Hop / Lo-Fi" },
+    { max: 122, label: "Deep House" },
+    { max: 128, label: "House" },
+    { max: 135, label: "Tech House" },
+    { max: 140, label: "Techno — Minimal" },
+    { max: 148, label: "Techno — Peak Time" },
+    { max: 155, label: "Hard Techno" },
+    { max: 175, label: "Drum & Bass" },
+    { max: 999, label: "Hardcore / Gabber" },
+  ];
+
+  function getGenre(bpm) { return GENRES.find(g => bpm < g.max)?.label || "Unknown"; }
+
+  // Octave correction for edge cases outside 90–180 range
+  function octaveCorrect(bpm) {
+    while (bpm > 0 && bpm < 80 && bpm * 2 <= 200) bpm *= 2;
+    while (bpm > 185 && bpm / 2 >= 80) bpm = Math.round(bpm / 2);
+    return Math.round(bpm);
+  }
+
+  // ── LOG ───────────────────────────────────────────────────────────────────
+  function log(msg, type = '') {
+    const el = document.getElementById('log');
+    const t = new Date().toLocaleTimeString('en-GB', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    const d = document.createElement('div');
+    d.className = 'log-entry' + (type === 'hi' ? ' hi' : type === 'warn' ? ' warn' : '');
+    d.textContent = `[${t}] ${msg}`;
+    el.insertBefore(d, el.firstChild);
+  }
+
+  // ── WAVEFORM ─────────────────────────────────────────────────────────────
+  const BAR_COUNT = 36;
+  const waveformEl = document.getElementById('waveform');
+  const bars = [];
+  for (let i = 0; i < BAR_COUNT; i++) {
+    const b = document.createElement('div');
+    b.className = 'waveform-bar';
+    waveformEl.appendChild(b);
+    bars.push(b);
+  }
+
+  // ── UI HELPERS ────────────────────────────────────────────────────────────
+  const bpmEl       = document.getElementById('bpmNumber');
+  const bpmLabelEl  = document.getElementById('bpmStateLabel');
+  const bpmGenreEl  = document.getElementById('bpmGenre');
+  const bpmMetaEl   = document.getElementById('bpmMeta');
+  const stableTagEl = document.getElementById('stableTag');
+  const candidatesEl = document.getElementById('candidatesRow');
+
+  function showBpm(bpm, candidates, isStable, data) {
+    bpmEl.textContent = bpm;
+    bpmEl.className   = 'bpm-number ' + (isStable ? 'stable' : 'live');
+    bpmGenreEl.textContent = getGenre(bpm);
+
+    const conf = candidates[0]?.count || 0;
+    const thresh = data?.threshold?.toFixed(2) || '—';
+    bpmMetaEl.textContent = `CONFIDENCE: ${conf} · THRESHOLD: ${thresh}`;
+
+    if (isStable) {
+      bpmLabelEl.textContent = 'STABLE RESULT';
+      stableTagEl.className = 'stable-tag show';
+    } else {
+      bpmLabelEl.innerHTML = '<span class="live-dot"></span>LIVE ESTIMATE';
+    }
+
+    updateCandidates(candidates);
+  }
+
+  function updateCandidates(arr) {
+    if (!arr || arr.length === 0) return;
+    candidatesEl.innerHTML = '';
+    arr.slice(0, 5).forEach((c, i) => {
+      const bpm = octaveCorrect(c.tempo);
+      const div = document.createElement('div');
+      div.className = 'candidate-chip' + (i === 0 ? ' best' : '');
+      div.textContent = `${bpm} BPM (${c.count})`;
+      candidatesEl.appendChild(div);
+    });
+  }
+
+  // ── STATE ─────────────────────────────────────────────────────────────────
+  let recording     = false;
+  let stream        = null;
+  let audioCtx      = null;
+  let analyserNode  = null;
+  let bpmAnalyzer   = null;
+  let animFrame     = null;
+  let progressTimer = null;
+  let hasStable     = false;
+  const MAX_DURATION = 30000; // 30s hard max
+
+  // ── TOGGLE ────────────────────────────────────────────────────────────────
+  async function toggleRecording() {
+    if (recording) { await stopAll(); return; }
+    await startRecording();
+  }
+
+  // Make available globally since onclick is used in HTML
+  window.toggleRecording = toggleRecording;
+
+  async function startRecording() {
+    // Module scripts run async — wait briefly if lib not ready yet
+    if (!window._libReady) {
+      await new Promise(resolve => setTimeout(resolve, 600));
+      if (!window._libReady) {
+        log('Library not ready — reload the page', 'warn');
+        document.getElementById('statusText').textContent = 'Error — reload page';
+        return;
+      }
+    }
+
+    // Reset UI
+    bpmEl.textContent = '—';
+    bpmEl.className = 'bpm-number';
+    bpmLabelEl.textContent = 'WAITING';
+    bpmGenreEl.textContent = '';
+    bpmMetaEl.textContent = '';
+    stableTagEl.className = 'stable-tag';
+    candidatesEl.innerHTML = '<div class="candidate-chip">—</div>';
+    document.getElementById('log').innerHTML = '';
+    hasStable = false;
+
+    // Get microphone
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    } catch(e) {
+      log('Microphone denied: ' + e.message, 'warn');
+      document.getElementById('statusText').textContent = 'Mic denied — check permissions';
+      return;
+    }
+
+    // Create AudioContext
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    log(`AudioContext: ${audioCtx.sampleRate}Hz`);
+
+    const source = audioCtx.createMediaStreamSource(stream);
+
+    // Analyser for waveform + signal meter (display only)
+    analyserNode = audioCtx.createAnalyser();
+    analyserNode.fftSize = 1024;
+    analyserNode.smoothingTimeConstant = 0.6;
+    source.connect(analyserNode);
+
+    // Create realtime BPM analyzer
+    try {
+      bpmAnalyzer = await window._createRealtimeBpmAnalyzer(audioCtx, {
+        continuousAnalysis: false,   // IMPORTANT: false for microphone per docs
+        stabilizationTime: 12000,    // 12s — faster than 20s default
+        muteTimeInIndexes: 10000,    // default — min samples between peaks
+        debug: false,
+      });
+    } catch(e) {
+      log('BPM analyzer init failed: ' + e.message, 'warn');
+      stream.getTracks().forEach(t => t.stop());
+      return;
+    }
+
+    // Connect mic → BPM analyzer (NOT to destination — no feedback)
+    source.connect(bpmAnalyzer.node);
+    log('Mic connected to BPM analyzer');
+
+    // ── bpm event: live updates ──
+    bpmAnalyzer.on('bpm', (data) => {
+      if (hasStable || !data.bpm?.length) return;
+      const bpm = octaveCorrect(data.bpm[0].tempo);
+      log(`bpm event: raw=${data.bpm[0].tempo} corrected=${bpm} count=${data.bpm[0].count}`);
+      showBpm(bpm, data.bpm, false, data);
+    });
+
+    // ── bpmStable event: confirmed result ──
+    bpmAnalyzer.once('bpmStable', (data) => {
+      if (!data.bpm?.length) return;
+      hasStable = true;
+      const bpm = octaveCorrect(data.bpm[0].tempo);
+      log(`STABLE: raw=${data.bpm[0].tempo} corrected=${bpm} count=${data.bpm[0].count} threshold=${data.threshold?.toFixed(2)}`, 'hi');
+      showBpm(bpm, data.bpm, true, data);
+      document.getElementById('statusText').textContent = `STABLE: ${bpm} BPM — stopping...`;
+      // Auto-stop after brief pause so user can see result
+      setTimeout(() => { if (recording) stopAll(); }, 1500);
+    });
+
+    bpmAnalyzer.on('analyzerReset', () => log('Analyzer reset'));
+
+    // ── Progress timer ──
+    const startTime = Date.now();
+    progressTimer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      document.getElementById('progressFill').style.width =
+        Math.min(100, (elapsed / MAX_DURATION) * 100) + '%';
+      if (elapsed >= MAX_DURATION) {
+        log('30s limit reached — no stable result found', 'warn');
+        stopAll();
+      }
+    }, 300);
+
+    // Activate UI
+    recording = true;
+    document.getElementById('recordBtn').classList.add('recording');
+    document.getElementById('recordBtn').textContent = '◼ STOP';
+    document.getElementById('statusText').textContent = 'Listening — hold device near music...';
+    document.getElementById('progressFill').style.width = '0%';
+    bars.forEach(b => b.classList.add('active'));
+
+    waveformLoop();
+    log('Started — waiting for bpm events...');
+  }
+
+  async function stopAll() {
+    recording = false;
+    clearInterval(progressTimer);
+    cancelAnimationFrame(animFrame);
+
+    try { bpmAnalyzer?.stop(); }      catch(e) {}
+    try { bpmAnalyzer?.disconnect(); } catch(e) {}
+    bpmAnalyzer = null;
+
+    stream?.getTracks().forEach(t => t.stop());
+    stream = null;
+
+    try { await audioCtx?.close(); } catch(e) {}
+    audioCtx = null;
+    analyserNode = null;
+
+    document.getElementById('recordBtn').classList.remove('recording');
+    document.getElementById('recordBtn').textContent = '⊙ START';
+    document.getElementById('progressFill').style.width = hasStable ? '100%' : '0%';
+    bars.forEach(b => { b.style.height = '3px'; b.classList.remove('active'); });
+    document.getElementById('signalFill').style.width = '0%';
+    document.getElementById('signalDb').textContent = '— dB';
+
+    if (!hasStable) {
+      bpmLabelEl.textContent = 'NO RESULT';
+      document.getElementById('statusText').textContent = 'Try again — move closer or check signal level';
+      log('Stopped — no stable result', 'warn');
+    }
+  }
+
+  // ── WAVEFORM + SIGNAL METER ───────────────────────────────────────────────
+  function waveformLoop() {
+    if (!recording || !analyserNode) return;
+
+    const bufLen = analyserNode.frequencyBinCount;
+    const timeData = new Float32Array(bufLen);
+    analyserNode.getFloatTimeDomainData(timeData);
+
+    // RMS → signal level meter
+    let sum = 0;
+    for (let i = 0; i < timeData.length; i++) sum += timeData[i] * timeData[i];
+    const rms = Math.sqrt(sum / timeData.length);
+    const db  = rms > 0.00001 ? 20 * Math.log10(rms) : -100;
+    const pct = Math.max(0, Math.min(100, (db + 60) / 60 * 100));
+    document.getElementById('signalFill').style.width = pct + '%';
+    document.getElementById('signalDb').textContent = db.toFixed(1) + ' dB';
+
+    // Frequency bars for waveform display
+    const freqData = new Uint8Array(bufLen);
+    analyserNode.getByteFrequencyData(freqData);
+    const step = Math.floor(freqData.length / BAR_COUNT);
+    for (let i = 0; i < BAR_COUNT; i++)
+      bars[i].style.height = Math.max(3, (freqData[i * step] / 255) * 33) + 'px';
+
+    animFrame = requestAnimationFrame(waveformLoop);
+  }
+
+  // ── INIT CHECK ────────────────────────────────────────────────────────────
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      if (window._libReady) {
+        log('realtime-bpm-analyzer v5.0.4: LOADED ✓');
+      } else {
+        log('Library not loaded — check that realtime-bpm-analyzer.esm.js is in the same folder', 'warn');
+      }
+    }, 800);
+  });
+</script>
+</body>
+</html>
