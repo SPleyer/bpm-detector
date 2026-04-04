@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>BPM</title>
+  <meta name="description" content="Tap along to any song and instantly find the BPM." />
+  <meta name="theme-color" content="#000000" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23000'/><text x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='11' fill='%23fff'>BPM</text></svg>" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22BPM%22,%22short_name%22:%22BPM%22,%22description%22:%22Tap tempo BPM detector%22,%22start_url%22:%22./%22,%22display%22:%22standalone%22,%22background_color%22:%22%23000000%22,%22theme_color%22:%22%23000000%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23000'/%3E%3Ctext x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='68' fill='%23fff'%3EBPM%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22,%22purpose%22:%22any maskable%22}]}" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Counter.dev analytics -->
+  <script src="https://cdn.counter.dev/script.js" data-id="614691db-8d6c-45d7-80f8-59809f48caa1" data-utcoffset="2"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #000;
+      --fg: #fff;
+      --muted: #666;
+      --border: #2a2a2a;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Space Mono', monospace;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+    }
+
+    /* ── HEADER ── */
+    header { padding: 28px 24px 0; }
+
+    .title-main {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(56px, 15vw, 84px);
+      line-height: 1;
+      letter-spacing: 4px;
+      color: var(--fg);
+    }
+
+    .title-sub {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(12px, 3.2vw, 16px);
+      letter-spacing: 6px;
+      color: var(--muted);
+      margin-top: -2px;
+    }
+
+    /* ── ABOUT ── */
+    .about {
+      margin: 20px 24px 0;
+      padding: 14px 18px;
+      border: 1px solid var(--border);
+    }
+
+    .about-text {
+      font-size: 12px;
+      letter-spacing: 1px;
+      line-height: 1.8;
+      color: #999;
+    }
+
+    .about-text strong { color: #ccc; }
+
+    /* ── MODE HINT ── */
+    .mode-hint {
+      margin: 14px 24px 0;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      line-height: 1.7;
+      text-transform: uppercase;
+    }
+
+    /* ── MAIN ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 24px 28px;
+      gap: 20px;
+    }
+
+    /* ── BPM DISPLAY ── */
+    .bpm-display { text-align: center; }
+
+    .bpm-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(120px, 32vw, 210px);
+      line-height: 1;
+      letter-spacing: -2px;
+      color: #2a2a2a;
+      transition: color 0.3s;
+      min-width: 3ch;
+      display: inline-block;
+    }
+
+    .bpm-number.active { color: var(--fg); }
+
+    .bpm-unit {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(14px, 3.5vw, 20px);
+      letter-spacing: 8px;
+      color: var(--muted);
+      margin-top: -10px;
+    }
+
+    .genre-tag {
+      margin-top: 12px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(14px, 4vw, 20px);
+      letter-spacing: 5px;
+      color: #aaa;
+      min-height: 26px;
+      transition: opacity 0.4s;
+    }
+
+    .genre-tag.hidden { opacity: 0; }
+
+    /* Fixed height status area — never shifts layout */
+    .status-area {
+      margin-top: 8px;
+      height: 52px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .status-line {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      line-height: 1.5;
+      text-align: center;
+      max-width: 300px;
+    }
+
+    /* ── TAP BUTTON ── */
+    .tap-btn {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      border: 2px solid var(--fg);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: background 0.07s;
+    }
+
+    .tap-btn.flash { background: var(--fg); }
+    .tap-btn.flash .tap-label,
+    .tap-btn.flash .tap-sub { color: var(--bg); }
+
+    .tap-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 50px;
+      letter-spacing: 6px;
+      color: var(--fg);
+      pointer-events: none;
+      transition: color 0.07s;
+    }
+
+    .tap-sub {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px;
+      letter-spacing: 5px;
+      color: var(--muted);
+      pointer-events: none;
+      transition: color 0.07s;
+    }
+
+    .tap-count {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      min-height: 18px;
+    }
+
+    /* ── HISTORY ── */
+    .history-section {
+      width: 100%;
+      max-width: 480px;
+      padding: 0 24px 12px;
+    }
+
+    .history-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 15px;
+      letter-spacing: 5px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .history-empty {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 14px;
+    }
+
+    .history-bpm {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 40px;
+      line-height: 1;
+      min-width: 76px;
+      color: var(--fg);
+    }
+
+    .history-meta { flex: 1; }
+
+    .history-genre {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 15px;
+      letter-spacing: 3px;
+      color: #bbb;
+    }
+
+    .history-info {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 18px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .footer-copy {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+    }
+
+    .footer-links { display: flex; gap: 20px; }
+
+    .footer-links a {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-decoration: none;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--fg); border-color: var(--fg); }
+
+    /* ── MODALS ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 100;
+      padding: 40px 24px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open { display: block; }
+    .modal-content { max-width: 560px; margin: 0 auto; }
+
+    .modal-close {
+      display: block;
+      text-align: right;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 15px;
+      letter-spacing: 4px;
+      cursor: pointer;
+      margin-bottom: 32px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      touch-action: manipulation;
+    }
+
+    .modal-close:hover { color: var(--fg); }
+
+    .modal-h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 40px;
+      letter-spacing: 4px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .modal-h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 16px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      margin: 20px 0 8px;
+    }
+
+    .modal-p {
+      font-size: 13px;
+      letter-spacing: 1px;
+      line-height: 1.8;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="title-main">BPM</div>
+    <div class="title-sub">BEATS PER MINUTE</div>
+  </header>
+
+  <div class="about">
+    <div class="about-text">
+      <strong>BPM</strong> tells you the tempo of any song in real time.
+      Tap the button in time with the beat — results appear after a few taps.
+      Works for any music, heartbeat, or anything with a rhythm.
+      Spacebar works on desktop.
+    </div>
+  </div>
+
+  <div class="mode-hint">
+    Tap the button in time with the beat. Resets automatically after 3 seconds of inactivity.
+  </div>
+
+  <main>
+    <div class="bpm-display">
+      <div class="bpm-number" id="bpmNumber">—</div>
+      <div class="bpm-unit">BPM</div>
+      <div class="genre-tag hidden" id="genreTag"></div>
+      <div class="status-area">
+        <div class="status-line" id="statusLine"></div>
+      </div>
+    </div>
+
+    <button class="tap-btn" id="tapBtn">
+      <div class="tap-label">TAP</div>
+      <div class="tap-sub">BEAT</div>
+    </button>
+    <div class="tap-count" id="tapCount"></div>
+  </main>
+
+  <section class="history-section">
+    <div class="history-title">HISTORY</div>
+    <div id="historyList">
+      <div class="history-empty" id="historyEmpty">NO MEASUREMENTS YET</div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-copy">© 2026 SIMON PLEYER</div>
+    <div class="footer-links">
+      <a href="#" onclick="openModal('impressum'); return false;">Impressum</a>
+      <a href="#" onclick="openModal('datenschutz'); return false;">Datenschutz</a>
+    </div>
+  </footer>
+
+  <!-- IMPRESSUM -->
+  <div class="modal-overlay" id="modal-impressum">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('impressum')">✕ CLOSE</button>
+      <div class="modal-h1">IMPRESSUM</div>
+      <div class="modal-p">Angaben gemäß §5 TMG</div>
+      <div class="modal-h2">BETREIBER</div>
+      <div class="modal-p">
+        Simon Pleyer<br>
+        Berlin<br>
+        Deutschland
+      </div>
+      <div class="modal-h2">KONTAKT</div>
+      <div class="modal-p">E-Mail: simonpleyer@googlemail.com</div>
+      <div class="modal-h2">VERANTWORTLICH FÜR DEN INHALT</div>
+      <div class="modal-p">Simon Pleyer · gemäß §55 Abs. 2 RStV</div>
+    </div>
+  </div>
+
+  <!-- DATENSCHUTZ -->
+  <div class="modal-overlay" id="modal-datenschutz">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('datenschutz')">✕ CLOSE</button>
+      <div class="modal-h1">DATENSCHUTZ</div>
+      <div class="modal-h2">VERANTWORTLICHER</div>
+      <div class="modal-p">Simon Pleyer · Berlin · simonpleyer@googlemail.com</div>
+      <div class="modal-h2">DATENVERARBEITUNG</div>
+      <div class="modal-p">Diese App verarbeitet keine personenbezogenen Daten. Es werden keine Cookies gesetzt. Die App läuft vollständig lokal in deinem Browser.</div>
+      <div class="modal-h2">BESUCHERZÄHLER</div>
+      <div class="modal-p">Diese Website nutzt Counter.dev zur datenschutzfreundlichen Besucherzählung ohne Cookies und ohne personenbezogene Daten. Weitere Informationen: counter.dev/privacy</div>
+      <div class="modal-h2">SERVER-LOGS</div>
+      <div class="modal-p">Der Hosting-Anbieter (Netlify) speichert technische Zugriffsdaten (IP, Zeitstempel) für max. 30 Tage. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.</div>
+      <div class="modal-h2">DEINE RECHTE</div>
+      <div class="modal-p">Auskunft, Berichtigung, Löschung, Widerspruch gemäß DSGVO Art. 15–21. Kontakt: simonpleyer@googlemail.com</div>
+    </div>
+  </div>
+
+  <script>
+    // ── GENRES ────────────────────────────────────────────────────────────────
+    const GENRES = [
+      { max:  70, label: "DOWNTEMPO / AMBIENT" },
+      { max:  90, label: "HIP-HOP / TRAP" },
+      { max: 110, label: "TRIP-HOP / LO-FI" },
+      { max: 122, label: "DEEP HOUSE" },
+      { max: 128, label: "HOUSE" },
+      { max: 135, label: "TECH HOUSE" },
+      { max: 140, label: "TECHNO — MINIMAL" },
+      { max: 148, label: "TECHNO — PEAK TIME" },
+      { max: 155, label: "HARD TECHNO" },
+      { max: 175, label: "DRUM & BASS" },
+      { max: 999, label: "HARDCORE / GABBER" },
+    ];
+
+    function getGenre(bpm) { return GENRES.find(g => bpm < g.max)?.label || "UNKNOWN"; }
+
+    // ── TAP STATE ─────────────────────────────────────────────────────────────
+    let tapTimes = [];
+    let tapResetTimer = null;
+    let tapBPM = null;
+    let lastTapTime = 0;
+
+    const bpmEl    = document.getElementById('bpmNumber');
+    const genreEl  = document.getElementById('genreTag');
+    const statusEl = document.getElementById('statusLine');
+    const countEl  = document.getElementById('tapCount');
+
+    function handleTap() {
+      const now = Date.now();
+      if (now - lastTapTime < 100) return; // debounce
+      lastTapTime = now;
+
+      // Flash
+      const btn = document.getElementById('tapBtn');
+      btn.classList.add('flash');
+      setTimeout(() => btn.classList.remove('flash'), 110);
+
+      // Reset if > 3s since last tap
+      if (tapTimes.length > 0 && (now - tapTimes[tapTimes.length - 1]) > 3000) {
+        resetTap();
+      }
+
+      tapTimes.push(now);
+      if (tapTimes.length > 16) tapTimes.shift();
+
+      // Auto-save and reset after 3s inactivity
+      clearTimeout(tapResetTimer);
+      tapResetTimer = setTimeout(() => {
+        if (tapBPM !== null) addToHistory(tapBPM, getGenre(tapBPM));
+        resetTap();
+      }, 3000);
+
+      if (tapTimes.length < 2) {
+        countEl.textContent = 'KEEP TAPPING...';
+        statusEl.textContent = '';
+        return;
+      }
+
+      // Calculate BPM from average interval
+      const intervals = [];
+      for (let i = 1; i < tapTimes.length; i++)
+        intervals.push(tapTimes[i] - tapTimes[i-1]);
+      const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+      const bpm = Math.round(60000 / avg);
+
+      if (bpm >= 20 && bpm <= 300) {
+        tapBPM = bpm;
+        bpmEl.textContent = bpm;
+        bpmEl.classList.add('active');
+        genreEl.textContent = getGenre(bpm);
+        genreEl.classList.remove('hidden');
+        const n = tapTimes.length;
+        statusEl.textContent = n < 4 ? 'TAP MORE FOR ACCURACY' : 'STABLE';
+        countEl.textContent = n + ' TAPS';
+      }
+    }
+
+    function resetTap() {
+      tapTimes = [];
+      tapBPM = null;
+      clearTimeout(tapResetTimer);
+      bpmEl.textContent = '—';
+      bpmEl.classList.remove('active');
+      genreEl.classList.add('hidden');
+      statusEl.textContent = '';
+      countEl.textContent = '';
+    }
+
+    // Tap button — pointerdown for fastest response, no iOS zoom
+    const tapBtnEl = document.getElementById('tapBtn');
+    tapBtnEl.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      handleTap();
+    });
+
+    // Spacebar on desktop
+    document.addEventListener('keyup', e => {
+      if (e.code === 'Space') { e.preventDefault(); handleTap(); }
+    });
+
+    // ── HISTORY ──────────────────────────────────────────────────────────────
+    const history = [];
+
+    function addToHistory(bpm, genre) {
+      const timeStr = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      history.unshift({ bpm, genre, timeStr });
+      if (history.length > 10) history.pop();
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+      document.getElementById('historyEmpty').style.display = 'none';
+      Array.from(list.querySelectorAll('.history-item')).forEach(el => el.remove());
+      history.forEach(entry => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = `
+          <div class="history-bpm">${entry.bpm}</div>
+          <div class="history-meta">
+            <div class="history-genre">${entry.genre}</div>
+            <div class="history-info">${entry.timeStr} · TAP</div>
+          </div>`;
+        list.appendChild(item);
+      });
+    }
+
+    // ── MODALS ───────────────────────────────────────────────────────────────
+    function openModal(id) {
+      document.getElementById('modal-' + id).classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(id) {
+      document.getElementById('modal-' + id).classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('.modal-overlay').forEach(o => {
+      o.addEventListener('click', function(e) {
+        if (e.target === this) { this.classList.remove('open'); document.body.style.overflow = ''; }
+      });
+    });
+  </script>
+</body>
+</html>
